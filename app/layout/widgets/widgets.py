@@ -65,10 +65,10 @@ BOTAO_ALTERAR_TEMA = ft.IconButton(icon=ft.Icons.BRIGHTNESS_4, tooltip="Alterar 
 
 
 """ ----------------------------------------------------- Janela Principal ----------------------------------------------------- """
-TITULO_JANELA_PRINCIPAL = ft.Text("Simulação: Fio Retangular + Cabo Circular", size=24, weight=ft.FontWeight.W_600) ## Precisa ser alterado em algumas situaçãoes específicas
-DESCRICAO_APP = ft.Text("Este aplicativo simula a montagem prática de luvas, verificando fisicamente se o condutor cabe na luva. Além disso, realiza a simulação utilizando cabos retangulares e circulares para validar o encaixe em luvas curtas.", size=16)
+TITULO_JANELA_PRINCIPAL = ft.Text("Simulação: Fio Retangular + Cabo Circular", size=27, weight=ft.FontWeight.W_600) ## Precisa ser alterado em algumas situaçãoes específicas
+DESCRICAO_APP = ft.Text("Este aplicativo simula a montagem prática de luvas, verificando fisicamente se o condutor cabe na luva. Além disso, realiza a simulação \nutilizando cabos retangulares e circulares para validar o encaixe em luvas curtas.", size=16)
 
-PROGRESS_BAR_SIMULACAO = ft.ProgressBar(width=True, height=10, color=ft.Colors.BLUE_500, visible=True)
+PROGRESS_BAR_SIMULACAO = ft.ProgressBar(width=True, height=8, color=ft.Colors.BLUE_500, visible=True, border_radius=20)
 
 TEXT_DADOS_DAS_SECOES = ft.Text("Dados das Seções", size=20, weight=ft.FontWeight.W_500)
 
@@ -110,11 +110,11 @@ TITULO_AREA_TOTAL = ft.Text("Área Total", size=13, weight=ft.FontWeight.W_400)
 VALOR_AREA_TOTAL = ft.Text("163.81 mm²", size=20, weight=ft.FontWeight.W_500)
 
 
-TEXTO_VALIDACAO_SIMULACAO = ft.Text("Validação da Simulação", size=16, weight=ft.FontWeight.W_400)
+TEXTO_VALIDACAO_SIMULACAO = ft.Text("Validação da Simulação", size=13, weight=ft.FontWeight.W_400, color=ft.Colors.GREEN_300)
 CONTAINER_VALIDACAO_SIMULACAO = ft.Container(
     width=True,
-    height=50,
-    bgcolor=ft.Colors.GREY_300,
+    height=20,
+    bgcolor=ft.Colors.with_opacity(0.2,ft.Colors.GREEN_500),
     border_radius=10,
     padding=10,
     content=ft.Row(
@@ -127,13 +127,13 @@ CONTAINER_VALIDACAO_SIMULACAO = ft.Container(
 )
 
 TITULO_LOGS_SIMULACAO = ft.Text("Logs da Simulação", size=16, weight=ft.FontWeight.W_500)
-LOG_LIMPANDO_SIMULACAO_ANTERIOR = ft.Text("Limpando simulação anterior...", size=14, weight=ft.FontWeight.W_300)
-LOG_FASE_1 = ft.Text("Fase 1: Selecionando Luva... (0.04s)", size=14, weight=ft.FontWeight.W_300)
-LOG_FASE_2 = ft.Text("Fase 2: Posicionando Fio Retangular... (1.04s)", size=14, weight=ft.FontWeight.W_300)
-LOG_FASE_3 = ft.Text("Fase 3: Posicionando Cabo Circular... (0.06s)", size=14, weight=ft.FontWeight.W_300)
-LOG_CONCLUSAO_SIMULACAO = ft.Text("Simulação concluída! (Total: 1.14s)", size=14, weight=ft.FontWeight.W_300)
+LOG_LIMPANDO_SIMULACAO_ANTERIOR = ft.Text("Limpando simulação anterior...", size=11, weight=ft.FontWeight.W_300)
+LOG_FASE_1 = ft.Text("Fase 1: Selecionando Luva... (0.04s)", size=11, weight=ft.FontWeight.W_300)
+LOG_FASE_2 = ft.Text("Fase 2: Posicionando Fio Retangular... (1.04s)", size=11, weight=ft.FontWeight.W_300)
+LOG_FASE_3 = ft.Text("Fase 3: Posicionando Cabo Circular... (0.06s)", size=11, weight=ft.FontWeight.W_300)
+LOG_CONCLUSAO_SIMULACAO = ft.Text("Simulação concluída! (Total: 1.14s)", size=11, weight=ft.FontWeight.W_300)
 
-BOTAO_BAIXAR_RELATORIO = ft.ElevatedButton("Baixar Relatório", width=150, bgcolor=ft.Colors.RED)
+BOTAO_BAIXAR_RELATORIO = ft.ElevatedButton(text="Baixar Relatório", width=150, bgcolor=ft.Colors.RED, height=26, icon=ft.Icons.FILE_OPEN)
 
 TITULO_DESENVOLVEDOR = ft.Text("Desenvolvedor", size=14, weight=ft.FontWeight.W_400)
 VALOR_DESENVOLVEDOR = ft.Text("DELLAZARING - Parte Ativa Gravataí", size=14, weight=ft.FontWeight.W_500)

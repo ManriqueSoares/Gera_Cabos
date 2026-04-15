@@ -137,7 +137,110 @@ class Home(ft.Container):
                 ),
                 ft.Container(
                     expand=True,
-                    content=None
+                    content=ft.Column(
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        controls=[
+                            ft.Container(
+                                width=True,
+                                height=120,
+                                padding=ft.padding.only(
+                                    top=50, right=10, left=10
+                                ),
+                                #bgcolor="red",
+                                content=ft.Column(
+                                    width=True,
+                                    height=50,
+                                    alignment=ft.MainAxisAlignment.CENTER,
+                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                    controls=[
+                                        ft.Row(alignment=ft.MainAxisAlignment.START, vertical_alignment=ft.CrossAxisAlignment.CENTER, controls=[
+                                            TITULO_JANELA_PRINCIPAL
+                                        ]),
+                                        ft.Row(alignment=ft.MainAxisAlignment.START, vertical_alignment=ft.CrossAxisAlignment.CENTER, controls=[
+                                            DESCRICAO_APP
+                                        ])
+                                    ]
+                                )
+                            ),
+                            ft.Container(height=20),
+                            ## Progress Bar
+                            ft.Container(
+                                width=True,
+                                height=50,
+                                alignment=ft.alignment.center,
+                                padding=ft.padding.only(right=30, left=30),
+                                content=PROGRESS_BAR_SIMULACAO
+                            ),
+                            ## DADOS GERAIS
+                            ft.Container(
+                                expand=True,
+                                content=None
+                            ),
+                            ## VALIDACAO
+                            ft.Container(
+                                width=True,
+                                height=40,
+                                padding=ft.padding.only(right=15, left=15),
+                                content=CONTAINER_VALIDACAO_SIMULACAO
+                            ),
+                            
+                            ft.Divider(height=1, color=ft.Colors.GREY_900),
+                            ## LOGS
+                            ft.Container(
+                                width=True,
+                                height=300,
+                                padding=ft.padding.only(right=15, left=15),
+                                content=ft.Column(
+                                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                    controls=[
+                                        ft.Container(
+                                            width=True,
+                                            padding=5,
+                                            height=40,
+                                            content=ft.Row(
+                                                alignment=ft.MainAxisAlignment.START,
+                                                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                controls=[
+                                                    TITULO_LOGS_SIMULACAO
+                                                ]
+                                            )
+                                        ),
+                                        ft.Container(
+                                            expand=True,
+                                            padding=10,
+                                            content=ft.Row(
+                                                alignment=ft.MainAxisAlignment.START,
+                                                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                controls=[
+                                                    ft.Column(
+                                                        spacing=2,
+                                                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                                        horizontal_alignment=ft.CrossAxisAlignment.START,
+                                                        controls=[
+                                                            LOG_LIMPANDO_SIMULACAO_ANTERIOR,
+                                                            LOG_FASE_1,
+                                                            LOG_FASE_2,
+                                                            LOG_FASE_3,
+                                                            LOG_CONCLUSAO_SIMULACAO,
+                                                            ft.Container(
+                                                                width=True,
+                                                                height=30,
+                                                                content=BOTAO_BAIXAR_RELATORIO
+                                                            )
+                                                        ]
+                                                    )
+                                                ]
+                                            )
+                                        )
+                                    ]
+                                )
+                            )
+                            ## DEV
+                        
+                        ]
+                    )
                 )
             ]
         )
