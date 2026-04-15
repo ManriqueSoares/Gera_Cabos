@@ -3,7 +3,7 @@ import flet as ft
 """ ----------------------------------------------------- Sidebar ----------------------------------------------------- """
 
 BOTAO_CLOSE_SIDBAR = ft.IconButton(icon=ft.CupertinoIcons.LEFT_CHEVRON)
-LOGO_WEG = ft.Image(src="assets/icon.png", width=100) ## Verificar verdadeira posição
+LOGO_WEG = ft.Image(src="assets/icon.png", width=80) ## Verificar verdadeira posição
 
 PARAMETROS_DA_LUVA_TITLE = ft.Text("Parâmetros da Luva", size=15, weight=ft.FontWeight.W_500)
 DROPDOWN_SECAO_NOMINAL_DA_LUVA = ft.Dropdown(label="Seção Nominal da Luva", width=300, border_radius=10, label_style=ft.TextStyle(12), text_style=ft.TextStyle(12), scale=0.88, editable=True, input_filter=True, enable_filter=True, options=[

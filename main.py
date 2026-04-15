@@ -11,7 +11,7 @@ def main(page: ft.Page):
     page.window.width = 1100
     page.window.height = 700
     page.padding = 0
-    page.theme_mode = "light"
+    page.theme_mode = "dark"
     page.add(
         ft.Container(
             expand=True,
