@@ -5,30 +5,61 @@ import flet as ft
 BOTAO_CLOSE_SIDBAR = ft.IconButton(icon=ft.CupertinoIcons.LEFT_CHEVRON)
 LOGO_WEG = ft.Image(src="assets/icon.png", width=100) ## Verificar verdadeira posição
 
-PARAMETROS_DA_LUVA_TITLE = ft.Text("Parâmetros da Luva", size=20, weight=ft.FontWeight.W_500)
-DROPDOWN_SECAO_NOMINAL_DA_LUVA = ft.Dropdown(label="Seção Nominal da Luva", width=200, border_radius=10, options=[])
+PARAMETROS_DA_LUVA_TITLE = ft.Text("Parâmetros da Luva", size=15, weight=ft.FontWeight.W_500)
+DROPDOWN_SECAO_NOMINAL_DA_LUVA = ft.Dropdown(label="Seção Nominal da Luva", width=300, border_radius=10, label_style=ft.TextStyle(12), text_style=ft.TextStyle(12), scale=0.88, editable=True, input_filter=True, enable_filter=True, options=[
+    ft.dropdown.Option("Automático"),
+    ft.dropdown.Option("25 mm²"),
+    ft.dropdown.Option("35 mm²"),
+    ft.dropdown.Option("50 mm²"),
+    ft.dropdown.Option("70 mm²"),
+    ft.dropdown.Option("95 mm²"),
+    ft.dropdown.Option("120 mm²"),
+    ft.dropdown.Option("150 mm²"),
+    ft.dropdown.Option("185 mm²"),
+    ft.dropdown.Option("240 mm²"),
+    ft.dropdown.Option("300 mm²"),
+    ft.dropdown.Option("400 mm²"),
+    ft.dropdown.Option("500 mm²"),
+    ft.dropdown.Option("630 mm²"),
+    ft.dropdown.Option("Personalizado"),
+])
 
-FIO_RETANGULAR_TITLE = ft.Text("Fio Retangular", size=20, weight=ft.FontWeight.W_500)
-ENTRADA_TEXT_AXIAL = ft.TextField(label="Axial (mm)", width=200, border_radius=10)
-ENTRADA_TEXT_RADIAL = ft.TextField(label="Radial (mm)", width=200, border_radius=10)
-ENTRADA_TEXT_QUANTIDADE = ft.TextField(label="Quantidade", width=200, border_radius=10)
+ENTRADA_DIAMETRO_PERSONALIZADO = ft.TextField(label="Personalizado (mm)", width=300, border_radius=10, scale=0.88, label_style=ft.TextStyle(size=12), text_style=ft.TextStyle(size=12), visible=False)
 
-CABO_CIRCULAR_TITLE = ft.Text("Cabo Circular", size=20, weight=ft.FontWeight.W_500)
+FIO_RETANGULAR_TITLE = ft.Text("Fio Retangular", size=13, weight=ft.FontWeight.W_500)
+ENTRADA_TEXT_AXIAL = ft.TextField(label="Axial (mm)", width=300, border_radius=10, scale=0.88, label_style=ft.TextStyle(size=12), text_style=ft.TextStyle(size=12))
+ENTRADA_TEXT_RADIAL = ft.TextField(label="Radial (mm)", width=300, border_radius=10, scale=0.88, label_style=ft.TextStyle(size=12), text_style=ft.TextStyle(size=12))
+ENTRADA_TEXT_QUANTIDADE = ft.TextField(label="Quantidade", width=300, border_radius=10, scale=0.88, label_style=ft.TextStyle(size=12), text_style=ft.TextStyle(size=12))
+
+CABO_CIRCULAR_TITLE = ft.Text("Cabo Circular", size=13, weight=ft.FontWeight.W_500)
 CHECK_BOX_EXCLUIR_CABO_CIRCULAR = ft.Checkbox(label="Excluir Cabo Circular")
-DROPDOWN_SECAO_NOMINAL_CABO = ft.Dropdown(label="Seção Nominal do Cabo", width=200, border_radius=10, options=[])
+DROPDOWN_SECAO_NOMINAL_CABO = ft.Dropdown(label="Seção Nominal do Cabo", width=300, border_radius=10, label_style=ft.TextStyle(size=12), text_style=ft.TextStyle(size=12), scale=0.88, editable=True, input_filter=True, enable_filter=True, options=[
+    ft.dropdown.Option("Automático"),
+    ft.dropdown.Option("50 mm²"),
+    ft.dropdown.Option("70 mm²"),
+    ft.dropdown.Option("120 mm²"),
+    ft.dropdown.Option("185 mm²"),
+    ft.dropdown.Option("240 mm²"),
+    ft.dropdown.Option("300 mm²"),
+    ft.dropdown.Option("400 mm²"),
+    ft.dropdown.Option("500 mm²"),
+    ft.dropdown.Option("Personalizado"),
+])
 
-TEXT_DIAMETRO = ft.Text("Diâmetro 9.15 (mm)", size=20, weight=ft.FontWeight.W_500)
+ENTRADA_SECAO_PERSONALIZADA_CABO = ft.TextField(label="Personalizada (mm²)", width=300, border_radius=10, scale=0.88, label_style=ft.TextStyle(size=12), text_style=ft.TextStyle(size=12), visible=False)
 
-TITULO_GRANULARIDADE = ft.Text("Diâmetro do Micro-fio (Granularidade)", size=20, weight=ft.FontWeight.W_500)
-ENTRADA_TEXT_GRANULARIDADE = ft.TextField(width=200, border_radius=10)
-ICONE_PERGUNTA_GRANULARIDADE = ft.Icon(ft.Icons.HELP, color="#888888", size=18, tooltip="O cabo circular é multifilamentoso (composto por vários fios finos). O diâmetro selecionado será o diâmetro da 'partição' criada na simulação. Quanto menor, mais preciso o preenchimento, porém mais lenta a simulação.")
+TEXT_DIAMETRO = ft.Text("Diâmetro 9.15 (mm)", size=13, weight=ft.FontWeight.W_500)
 
+ENTRADA_TEXT_GRANULARIDADE = ft.TextField(label="Diâmetro do Micro-fio (Granularidade)", width=250, border_radius=10, scale=0.88, label_style=ft.TextStyle(size=12), text_style=ft.TextStyle(size=12))
+ICONE_PERGUNTA_GRANULARIDADE = ft.IconButton(icon=ft.Icons.HELP, icon_size=17, highlight_color="transparent", tooltip="O cabo circular é multifilamentoso (composto por vários fios finos). O diâmetro selecionado será o diâmetro da 'partição' criada na simulação. Quanto menor, mais preciso o preenchimento, porém mais lenta a simulação.")
+SLIDER_GRANULARIDADE = ft.Slider(min=0.4, max=2.0, value=1.0, divisions=49, width=250)
 
-TITULO_CONFIGURACOES = ft.Text("Configurações", size=20, weight=ft.FontWeight.W_500)
-TITULO_LIMITE_CONFIGURACAO = ft.Text("Limite de Ocupação (%)", size=18, weight=ft.FontWeight.W_400)
-ICONE_PERGUNTA_CONFIGURACOES = ft.Icon(ft.Icons.HELP, color="#888888", size=18, tooltip="Taxa de ocupação é a porcentagem da área interna da luva que é preenchida pelos condutores. O padrão é 85%, conforme WPR-33156 ES (WEG México).")
+TITULO_CONFIGURACOES = ft.Text("Configurações", size=13, weight=ft.FontWeight.W_500)
+ENTRADA_LIMITE_CONFIGURACAO = ft.TextField(label="Limite de Ocupação (%)", width=300, border_radius=10, scale=0.88, label_style=ft.TextStyle(size=12), text_style=ft.TextStyle(size=12))
+ICONE_PERGUNTA_CONFIGURACOES = ft.IconButton(icon=ft.Icons.HELP, icon_size=17, highlight_color="transparent", tooltip="Taxa de ocupação é a porcentagem da área interna da luva que é preenchida pelos condutores. O padrão é 85%, conforme WPR-33156 ES (WEG México).")
+SLIDER_LIMITE_OCUPACAO = ft.Slider(min=0.0, max=100.0, value=85.0, divisions=100, width=250)
 
-ELEVATE_BUTTON_EXECUTAR_SIMULACAO = ft.ElevatedButton("Executar Simulação", width=200, height=50, bgcolor="#4CAF50", color="white")
+ELEVATE_BUTTON_EXECUTAR_SIMULACAO = ft.ElevatedButton("Executar Simulação", width=150, height=30, bgcolor=ft.Colors.with_opacity(0.8,ft.Colors.BLUE_800), color="white")
 
 BOTAO_ALTERAR_TEMA = ft.IconButton(icon=ft.Icons.BRIGHTNESS_4, tooltip="Alterar Tema")
 

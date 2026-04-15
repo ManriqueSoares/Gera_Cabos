@@ -11,7 +11,7 @@ class Home(ft.Container):
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
                 ft.Container(
-                    width=270,
+                    width=310,
                     animate=ft.Animation(500, ft.AnimationCurve.DECELERATE),
                     height=True,
                     bgcolor=ft.Colors.with_opacity(0.5, ft.Colors.BLUE_GREY_100),
@@ -23,7 +23,7 @@ class Home(ft.Container):
                             ## TOP
                             ft.Container(
                                 width=True,
-                                height=200,
+                                height=120,
                                 padding=ft.padding.only(
                                     top=10, right=5, left=5
                                 ),
@@ -51,18 +51,77 @@ class Home(ft.Container):
                             ## MID
                             ft.Container(
                                 expand=True,
-                                content=None
+                                padding=10,
+                                content=ft.Column(
+                                    scroll="auto",
+                                    spacing=5,
+                                    alignment=ft.MainAxisAlignment.CENTER,
+                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                    controls=[
+                                        PARAMETROS_DA_LUVA_TITLE,
+                                        DROPDOWN_SECAO_NOMINAL_DA_LUVA,
+                                        ENTRADA_DIAMETRO_PERSONALIZADO,
+                                        ft.Container(height=10),
+                                        ft.Divider(height=1, color=ft.Colors.GREY_200),
+                                        ft.Container(height=10),
+                                        FIO_RETANGULAR_TITLE,
+                                        ENTRADA_TEXT_AXIAL,
+                                        ENTRADA_TEXT_RADIAL,
+                                        ENTRADA_TEXT_QUANTIDADE,
+                                        ft.Container(height=10),    
+                                        ft.Divider(height=1, color=ft.Colors.GREY_200),
+                                        ft.Container(height=10),
+                                        CABO_CIRCULAR_TITLE,
+                                        ft.Container(padding=ft.padding.only(left=60), alignment=ft.alignment.center, content=CHECK_BOX_EXCLUIR_CABO_CIRCULAR,),
+                                        ft.Container(height=10),    
+                                        ft.Divider(height=1, color=ft.Colors.GREY_200),
+                                        ft.Container(height=10),
+                                        DROPDOWN_SECAO_NOMINAL_CABO,
+                                        ENTRADA_SECAO_PERSONALIZADA_CABO,
+                                        ft.Container(height=10),    
+                                        ft.Divider(height=1, color=ft.Colors.GREY_200),
+                                        ft.Container(height=10),
+                                        TEXT_DIAMETRO,
+                                        ft.Container(height=10),    
+                                        ft.Divider(height=1, color=ft.Colors.GREY_200),
+                                        ft.Container(height=10),
+                                        ft.Row(spacing=1, alignment=ft.MainAxisAlignment.CENTER, vertical_alignment=ft.CrossAxisAlignment.CENTER, controls=[
+                                            ENTRADA_TEXT_GRANULARIDADE,
+                                            ICONE_PERGUNTA_GRANULARIDADE,
+                                        ]),
+                                        SLIDER_GRANULARIDADE,
+                                        ft.Container(height=10),    
+                                        ft.Divider(height=1, color=ft.Colors.GREY_200),
+                                        ft.Container(height=10),
+                                        ft.Row(alignment=ft.MainAxisAlignment.CENTER, vertical_alignment=ft.CrossAxisAlignment.CENTER, controls=[
+                                            TITULO_CONFIGURACOES,
+                                            ICONE_PERGUNTA_CONFIGURACOES,
+                                        ]),
+                                        ENTRADA_LIMITE_CONFIGURACAO,
+                                        SLIDER_LIMITE_OCUPACAO,
+                                        ft.Container(height=10),    
+                                        ft.Divider(height=1, color=ft.Colors.GREY_200),
+                                        ft.Container(height=10),
+                                    ]
+                                )
                             ),
                             ## BOTTOM
                             ft.Container(
                                 width=True,
                                 padding=5,
-                                height=80,
+                                height=100,
                                 #bgcolor="blue",
                                 content=ft.Column(
-                                    alignment=ft.MainAxisAlignment.END,
-                                    horizontal_alignment=ft.CrossAxisAlignment.END,
+                                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                                     controls=[
+                                        ft.Row(
+                                            alignment=ft.MainAxisAlignment.CENTER,
+                                            vertical_alignment=ft.CrossAxisAlignment.START,
+                                            controls=[
+                                                ELEVATE_BUTTON_EXECUTAR_SIMULACAO
+                                            ]
+                                        ),
                                         ft.Row(
                                             alignment=ft.MainAxisAlignment.END,
                                             vertical_alignment=ft.CrossAxisAlignment.END,
