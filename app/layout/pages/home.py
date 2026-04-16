@@ -1,22 +1,79 @@
-import flet as ft
+import base64
+import datetime
 import os
 import threading
-import base64
-from app.layout.widgets.widgets import *
-from app.services.simulacao import (
-    executar_simulacao as _run_sim,
-    salvar_imagem,
-    OPCOES_LUVA,
-    OPCOES_CABO_CIRCULAR,
+
+import flet as ft
+
+from app.config.constants import OPCOES_CABO_CIRCULAR, OPCOES_LUVA
+from app.layout.widgets.widgets import (
+    BOTAO_ALTERAR_TEMA,
+    BOTAO_BAIXAR_RELATORIO,
+    BOTAO_CLOSE_SIDBAR,
+    BOTAO_OPEN_SIDBAR,
+    CABO_CIRCULAR_TITLE,
+    CHECK_BOX_EXCLUIR_CABO_CIRCULAR,
+    CONTAINER_DESVIO_OCUPACAO,
+    CONTAINER_VALIDACAO_SIMULACAO,
+    DESCRICAO_APP,
+    DIVIDER_SIDEBAR,
+    DROPDOWN_SECAO_NOMINAL_CABO,
+    DROPDOWN_SECAO_NOMINAL_DA_LUVA,
+    ELEVATE_BUTTON_EXECUTAR_SIMULACAO,
+    ENTRADA_DIAMETRO_PERSONALIZADO,
+    ENTRADA_LIMITE_CONFIGURACAO,
+    ENTRADA_SECAO_PERSONALIZADA_CABO,
+    ENTRADA_TEXT_AXIAL,
+    ENTRADA_TEXT_GRANULARIDADE,
+    ENTRADA_TEXT_QUANTIDADE,
+    ENTRADA_TEXT_RADIAL,
+    FIO_RETANGULAR_TITLE,
+    ICONE_DESVIO_OCUPACAO,
+    ICONE_PERGUNTA_CONFIGURACOES,
+    ICONE_PERGUNTA_FIO_RETANGULAR,
+    ICONE_PERGUNTA_GRANULARIDADE,
+    ICONE_PERGUNTA_LUVA,
+    IMAGEM_SIMULACAO,
+    LOG_CONCLUSAO_SIMULACAO,
+    LOG_FASE_1,
+    LOG_FASE_2,
+    LOG_FASE_3,
+    LOG_LIMPANDO_SIMULACAO_ANTERIOR,
+    LOGO_WEG,
+    PARAMETROS_DA_LUVA_TITLE,
+    PROGRESS_BAR_SIMULACAO,
+    SLIDER_GRANULARIDADE,
+    SLIDER_LIMITE_OCUPACAO,
+    TEXT_DADOS_DAS_SECOES,
+    TEXTO_INDICADORES,
+    TEXTO_VALIDACAO_SIMULACAO,
+    TITULO_AREA_TOTAL,
+    TITULO_CABO_CIRCULAR,
+    TITULO_CONFIGURACOES,
+    TITULO_DESENVOLVEDOR,
+    TITULO_FIOS,
+    TITULO_FIO_RETANGULAR,
+    TITULO_JANELA_PRINCIPAL,
+    TITULO_LOGS_SIMULACAO,
+    TITULO_LUVA,
+    TITULO_OCUPACAO,
+    VALOR_AREA_TOTAL,
+    VALOR_CABO_CIRCULAR,
+    VALOR_DESENVOLVEDOR,
+    VALOR_DESVIO_OCUPACAO,
+    VALOR_FIO_RETANGULAR,
+    VALOR_INDICADOR_FIOS,
+    VALOR_INDICADOR_OCUPACAO,
+    VALOR_LUVA,
 )
 from app.services.gera_relatorio import create_pdf
+from app.services.simulacao import executar_simulacao as _run_sim, salvar_imagem
 
 
 class Home(ft.Container):
     def __init__(self, page: ft.Page):
         super().__init__()
 
-        ## ADD FUNCS AOS BUTTONS
         BOTAO_CLOSE_SIDBAR.on_click = self.close_sidebar
         BOTAO_OPEN_SIDBAR.on_click = self.open_sidbar
         DROPDOWN_SECAO_NOMINAL_DA_LUVA.on_change = self.selection_dropdown_luva
@@ -25,13 +82,11 @@ class Home(ft.Container):
         SLIDER_LIMITE_OCUPACAO.on_change = self.slider_limite_ocupacao_change
         ENTRADA_LIMITE_CONFIGURACAO.on_change = self.escrevendo_entrada_limite_ocupacao
         ENTRADA_TEXT_GRANULARIDADE.on_change = self.escrevendo_entrada_granularidade
-        CHECK_BOX_EXCLUIR_CABO_CIRCULAR.on_change = (
-            self.checkbox_excluir_cabo_circular_change
-        )
+        CHECK_BOX_EXCLUIR_CABO_CIRCULAR.on_change = self.checkbox_excluir_cabo_circular_change
         BOTAO_ALTERAR_TEMA.on_click = self.alterar_tema
         ELEVATE_BUTTON_EXECUTAR_SIMULACAO.on_click = self.executar_simulacao
         BOTAO_BAIXAR_RELATORIO.on_click = self.baixar_relatorio
-        ## SIDBAR
+
         self.sidbar = ft.Container(
             width=310,
             animate=ft.Animation(500, ft.AnimationCurve.DECELERATE),
@@ -42,12 +97,10 @@ class Home(ft.Container):
                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 controls=[
-                    ## TOP
                     ft.Container(
                         width=True,
                         height=120,
                         padding=ft.padding.only(top=10, right=5, left=5),
-                        # bgcolor="red",
                         content=ft.Column(
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -65,7 +118,6 @@ class Home(ft.Container):
                             ],
                         ),
                     ),
-                    ## MID
                     ft.Container(
                         expand=True,
                         padding=10,
@@ -131,12 +183,10 @@ class Home(ft.Container):
                             ],
                         ),
                     ),
-                    ## BOTTOM
                     ft.Container(
                         width=True,
                         padding=5,
                         height=100,
-                        # bgcolor="blue",
                         content=ft.Column(
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -158,21 +208,22 @@ class Home(ft.Container):
             ),
         )
 
-        """  --------------------------------------------------------- CONFIG FRAME ---------------------------------------------------------  """
         self.page = page
         self.expand = True
 
-        self._resultado = None
-        self._caminho_img = None
-        self._simulacao_aprovada = False
+        self._resultado: dict | None = None
+        self._caminho_img: str | None = None
+        self._simulacao_aprovada: bool = False
 
         self._file_picker = ft.FilePicker(on_result=self.on_file_picker_result)
         self.page.overlay.append(self._file_picker)
 
         self.content = self.build()
-        """  --------------------------------------------------------------------------------------------------------------------------------  """
 
-    def alterar_tema(self, e):
+    # --------------------------------------------------------------------------
+    # Tema
+    # --------------------------------------------------------------------------
+    def alterar_tema(self, _) -> None:
         if self.page.theme_mode == "light":
             self.page.theme_mode = "dark"
             self.sidbar.bgcolor = ft.Colors.with_opacity(0.8, ft.Colors.BLUE_GREY_900)
@@ -185,32 +236,38 @@ class Home(ft.Container):
         DIVIDER_SIDEBAR.update()
         self.page.update()
 
-    def open_sidbar(self, e):
+    # --------------------------------------------------------------------------
+    # Sidebar
+    # --------------------------------------------------------------------------
+    def open_sidbar(self, _) -> None:
         self.sidbar.width = 310
         BOTAO_OPEN_SIDBAR.visible = False
         BOTAO_OPEN_SIDBAR.update()
         self.sidbar.update()
 
-    def close_sidebar(self, e):
+    def close_sidebar(self, _) -> None:
         self.sidbar.width = 0.0
         BOTAO_OPEN_SIDBAR.visible = True
         BOTAO_OPEN_SIDBAR.update()
         self.sidbar.update()
 
-    def slider_granularidade_change(self, e):
+    # --------------------------------------------------------------------------
+    # Sincronização slider ↔ campo de texto
+    # --------------------------------------------------------------------------
+    def slider_granularidade_change(self, _) -> None:
         ENTRADA_TEXT_GRANULARIDADE.value = f"{SLIDER_GRANULARIDADE.value:.2f}"
         SLIDER_GRANULARIDADE.label = f"{SLIDER_GRANULARIDADE.value:.2f}"
         ENTRADA_TEXT_GRANULARIDADE.update()
         SLIDER_GRANULARIDADE.update()
 
-    def slider_limite_ocupacao_change(self, e):
+    def slider_limite_ocupacao_change(self, _) -> None:
         ENTRADA_LIMITE_CONFIGURACAO.value = f"{SLIDER_LIMITE_OCUPACAO.value:.0f}"
         SLIDER_LIMITE_OCUPACAO.label = f"{SLIDER_LIMITE_OCUPACAO.value:.0f}"
         ENTRADA_LIMITE_CONFIGURACAO.update()
         SLIDER_LIMITE_OCUPACAO.update()
 
-    def escrevendo_entrada_limite_ocupacao(self, e):
-        if ENTRADA_LIMITE_CONFIGURACAO.error_text != None:
+    def escrevendo_entrada_limite_ocupacao(self, _) -> None:
+        if ENTRADA_LIMITE_CONFIGURACAO.error_text is not None:
             ENTRADA_LIMITE_CONFIGURACAO.error_text = None
             ENTRADA_LIMITE_CONFIGURACAO.update()
         try:
@@ -225,12 +282,10 @@ class Home(ft.Container):
         except ValueError:
             pass
 
-    def escrevendo_entrada_granularidade(self, e):
-
-        if ENTRADA_TEXT_GRANULARIDADE.error_text != None:
+    def escrevendo_entrada_granularidade(self, _) -> None:
+        if ENTRADA_TEXT_GRANULARIDADE.error_text is not None:
             ENTRADA_TEXT_GRANULARIDADE.error_text = None
             ENTRADA_TEXT_GRANULARIDADE.update()
-
         try:
             valor = float(ENTRADA_TEXT_GRANULARIDADE.value)
             if 0.4 <= valor <= 2.0:
@@ -238,110 +293,48 @@ class Home(ft.Container):
                 SLIDER_GRANULARIDADE.label = f"{valor:.2f}"
                 SLIDER_GRANULARIDADE.update()
             else:
-                ENTRADA_TEXT_GRANULARIDADE.error_text = (
-                    "Valor deve ser entre 0.40 e 2.00."
-                )
+                ENTRADA_TEXT_GRANULARIDADE.error_text = "Valor deve ser entre 0.40 e 2.00."
                 ENTRADA_TEXT_GRANULARIDADE.update()
-
         except ValueError:
             pass
 
-    def selection_dropdown_luva(self, e):
-        match DROPDOWN_SECAO_NOMINAL_DA_LUVA.value:
-            case "25 mm²":
-                ENTRADA_DIAMETRO_PERSONALIZADO.value = 8.0
-                ENTRADA_DIAMETRO_PERSONALIZADO.disabled = True
-            case "35 mm²":
-                ENTRADA_DIAMETRO_PERSONALIZADO.value = 9.0
-                ENTRADA_DIAMETRO_PERSONALIZADO.disabled = True
-            case "50 mm²":
-                ENTRADA_DIAMETRO_PERSONALIZADO.value = 11.0
-                ENTRADA_DIAMETRO_PERSONALIZADO.disabled = True
-            case "70 mm²":
-                ENTRADA_DIAMETRO_PERSONALIZADO.value = 13.0
-                ENTRADA_DIAMETRO_PERSONALIZADO.disabled = True
-            case "95 mm²":
-                ENTRADA_DIAMETRO_PERSONALIZADO.value = 15.0
-                ENTRADA_DIAMETRO_PERSONALIZADO.disabled = True
-            case "120 mm²":
-                ENTRADA_DIAMETRO_PERSONALIZADO.value = 17.0
-                ENTRADA_DIAMETRO_PERSONALIZADO.disabled = True
-            case "150 mm²":
-                ENTRADA_DIAMETRO_PERSONALIZADO.value = 19.0
-                ENTRADA_DIAMETRO_PERSONALIZADO.disabled = True
-            case "185 mm²":
-                ENTRADA_DIAMETRO_PERSONALIZADO.value = 21.0
-                ENTRADA_DIAMETRO_PERSONALIZADO.disabled = True
-            case "240 mm²":
-                ENTRADA_DIAMETRO_PERSONALIZADO.value = 24.0
-                ENTRADA_DIAMETRO_PERSONALIZADO.disabled = True
-            case "300 mm²":
-                ENTRADA_DIAMETRO_PERSONALIZADO.value = 24.5
-                ENTRADA_DIAMETRO_PERSONALIZADO.disabled = True
-            case "400 mm²":
-                ENTRADA_DIAMETRO_PERSONALIZADO.value = 30.0
-                ENTRADA_DIAMETRO_PERSONALIZADO.disabled = True
-            case "500 mm²":
-                ENTRADA_DIAMETRO_PERSONALIZADO.value = 33.0
-                ENTRADA_DIAMETRO_PERSONALIZADO.disabled = True
-            case "630 mm²":
-                ENTRADA_DIAMETRO_PERSONALIZADO.value = 39.0
-                ENTRADA_DIAMETRO_PERSONALIZADO.disabled = True
-            case "Personalizado":
-                ENTRADA_DIAMETRO_PERSONALIZADO.value = 0.0
-                ENTRADA_DIAMETRO_PERSONALIZADO.disabled = False
-                pass
+    # --------------------------------------------------------------------------
+    # Dropdowns
+    # --------------------------------------------------------------------------
+    def selection_dropdown_luva(self, e) -> None:
+        value = DROPDOWN_SECAO_NOMINAL_DA_LUVA.value
+        if value in OPCOES_LUVA:
+            ENTRADA_DIAMETRO_PERSONALIZADO.value = OPCOES_LUVA[value]
+            ENTRADA_DIAMETRO_PERSONALIZADO.disabled = True
+        elif value == "Personalizado":
+            ENTRADA_DIAMETRO_PERSONALIZADO.value = 0.0
+            ENTRADA_DIAMETRO_PERSONALIZADO.disabled = False
         ENTRADA_DIAMETRO_PERSONALIZADO.visible = True
         ENTRADA_DIAMETRO_PERSONALIZADO.update()
 
-    def selection_dropdown_cabo(self, e):
-        match DROPDOWN_SECAO_NOMINAL_CABO.value:
-            case "50 mm²":
-                ENTRADA_SECAO_PERSONALIZADA_CABO.value = 9.15
-                ENTRADA_SECAO_PERSONALIZADA_CABO.disabled = True
-            case "70 mm²":
-                ENTRADA_SECAO_PERSONALIZADA_CABO.value = 10.83
-                ENTRADA_SECAO_PERSONALIZADA_CABO.disabled = True
-            case "120 mm²":
-                ENTRADA_SECAO_PERSONALIZADA_CABO.value = 14.77
-                ENTRADA_SECAO_PERSONALIZADA_CABO.disabled = True
-            case "185 mm²":
-                ENTRADA_SECAO_PERSONALIZADA_CABO.value = 18.09
-                ENTRADA_SECAO_PERSONALIZADA_CABO.disabled = True
-            case "240 mm²":
-                ENTRADA_SECAO_PERSONALIZADA_CABO.value = 23.3
-                ENTRADA_SECAO_PERSONALIZADA_CABO.disabled = True
-            case "300 mm²":
-                ENTRADA_SECAO_PERSONALIZADA_CABO.value = 23.5
-                ENTRADA_SECAO_PERSONALIZADA_CABO.disabled = True
-            case "400 mm²":
-                ENTRADA_SECAO_PERSONALIZADA_CABO.value = 29.1
-                ENTRADA_SECAO_PERSONALIZADA_CABO.disabled = True
-            case "500 mm²":
-                ENTRADA_SECAO_PERSONALIZADA_CABO.value = 33.5
-                ENTRADA_SECAO_PERSONALIZADA_CABO.disabled = True
-            case "Personalizado":
-                ENTRADA_SECAO_PERSONALIZADA_CABO.value = 0.0
-                ENTRADA_SECAO_PERSONALIZADA_CABO.disabled = False
-                pass
+    def selection_dropdown_cabo(self, e) -> None:
+        value = DROPDOWN_SECAO_NOMINAL_CABO.value
+        if value in OPCOES_CABO_CIRCULAR:
+            ENTRADA_SECAO_PERSONALIZADA_CABO.value = OPCOES_CABO_CIRCULAR[value]
+            ENTRADA_SECAO_PERSONALIZADA_CABO.disabled = True
+        elif value == "Personalizado":
+            ENTRADA_SECAO_PERSONALIZADA_CABO.value = 0.0
+            ENTRADA_SECAO_PERSONALIZADA_CABO.disabled = False
         ENTRADA_SECAO_PERSONALIZADA_CABO.visible = True
         ENTRADA_SECAO_PERSONALIZADA_CABO.update()
 
-    def checkbox_excluir_cabo_circular_change(self, e):
-        if CHECK_BOX_EXCLUIR_CABO_CIRCULAR.value == True:
-            TITULO_JANELA_PRINCIPAL.value = "Simulação: Fio Retangular"
-            DROPDOWN_SECAO_NOMINAL_CABO.visible = False
-            ENTRADA_SECAO_PERSONALIZADA_CABO.visible = False
-            ENTRADA_TEXT_GRANULARIDADE.visible = False
-            ICONE_PERGUNTA_GRANULARIDADE.visible = False
-            SLIDER_GRANULARIDADE.visible = False
-        else:
-            TITULO_JANELA_PRINCIPAL.value = "Simulação: Fio Retangular + Cabo Circular"
-            DROPDOWN_SECAO_NOMINAL_CABO.visible = True
-            ENTRADA_SECAO_PERSONALIZADA_CABO.visible = True
-            ENTRADA_TEXT_GRANULARIDADE.visible = True
-            ICONE_PERGUNTA_GRANULARIDADE.visible = True
-            SLIDER_GRANULARIDADE.visible = True
+    def checkbox_excluir_cabo_circular_change(self, e) -> None:
+        excluir = bool(CHECK_BOX_EXCLUIR_CABO_CIRCULAR.value)
+
+        TITULO_JANELA_PRINCIPAL.value = (
+            "Simulação: Fio Retangular" if excluir else "Simulação: Fio Retangular + Cabo Circular"
+        )
+        visivel = not excluir
+        DROPDOWN_SECAO_NOMINAL_CABO.visible = visivel
+        ENTRADA_SECAO_PERSONALIZADA_CABO.visible = visivel
+        ENTRADA_TEXT_GRANULARIDADE.visible = visivel
+        ICONE_PERGUNTA_GRANULARIDADE.visible = visivel
+        SLIDER_GRANULARIDADE.visible = visivel
 
         TITULO_JANELA_PRINCIPAL.update()
         DROPDOWN_SECAO_NOMINAL_CABO.update()
@@ -350,24 +343,27 @@ class Home(ft.Container):
         ICONE_PERGUNTA_GRANULARIDADE.update()
         SLIDER_GRANULARIDADE.update()
 
-    def executar_simulacao(self, e):
-        # --- Leitura e validação dos inputs ---
+    # --------------------------------------------------------------------------
+    # Helpers de UI
+    # --------------------------------------------------------------------------
+    def _mostrar_erro_ui(self, mensagem: str) -> None:
+        CONTAINER_VALIDACAO_SIMULACAO.bgcolor = ft.Colors.with_opacity(0.2, ft.Colors.RED_500)
+        TEXTO_VALIDACAO_SIMULACAO.value = mensagem
+        TEXTO_VALIDACAO_SIMULACAO.color = ft.Colors.RED_300
+        CONTAINER_VALIDACAO_SIMULACAO.visible = True
+        TEXTO_VALIDACAO_SIMULACAO.visible = True
+        self.page.update()
+
+    # --------------------------------------------------------------------------
+    # Simulação
+    # --------------------------------------------------------------------------
+    def executar_simulacao(self, e) -> None:
         try:
             ALT_RECT = float(ENTRADA_TEXT_AXIAL.value or 0)
             LARG_RECT = float(ENTRADA_TEXT_RADIAL.value or 0)
             QTD_RECT = int(float(ENTRADA_TEXT_QUANTIDADE.value or 0))
         except ValueError:
-            CONTAINER_VALIDACAO_SIMULACAO.bgcolor = ft.Colors.with_opacity(
-                0.2, ft.Colors.RED_500
-            )
-            TEXTO_VALIDACAO_SIMULACAO.value = (
-                "Erro: preencha corretamente Axial, Radial e Quantidade."
-            )
-            TEXTO_VALIDACAO_SIMULACAO.color = ft.Colors.RED_300
-            CONTAINER_VALIDACAO_SIMULACAO.visible = True
-            TEXTO_VALIDACAO_SIMULACAO.visible = True
-            CONTAINER_VALIDACAO_SIMULACAO.update()
-            TEXTO_VALIDACAO_SIMULACAO.update()
+            self._mostrar_erro_ui("Preencha corretamente os campos Axial, Radial e Quantidade.")
             return
 
         escolha_luva = DROPDOWN_SECAO_NOMINAL_DA_LUVA.value or "Automático"
@@ -397,7 +393,7 @@ class Home(ft.Container):
         else:
             DIAM_REDONDO_TOTAL = OPCOES_CABO_CIRCULAR.get(escolha_cabo, 0.0)
 
-        # --- Prepara UI para a simulação ---
+        # Prepara UI para a simulação
         PROGRESS_BAR_SIMULACAO.value = 0
         PROGRESS_BAR_SIMULACAO.visible = True
         PROGRESS_BAR_SIMULACAO.update()
@@ -412,7 +408,6 @@ class Home(ft.Container):
         CONTAINER_VALIDACAO_SIMULACAO.visible = False
         self.page.update()
 
-        # --- Callbacks para atualização em tempo real ---
         _log_widgets = [
             LOG_LIMPANDO_SIMULACAO_ANTERIOR,
             LOG_FASE_1,
@@ -421,59 +416,60 @@ class Home(ft.Container):
             LOG_CONCLUSAO_SIMULACAO,
         ]
 
-        def on_log(fase_idx: int, texto: str):
+        def on_log(fase_idx: int, texto: str) -> None:
             widget = _log_widgets[fase_idx]
             widget.value = texto
             widget.visible = True
             widget.update()
 
-        def on_progress(valor: int):
+        def on_progress(valor: int) -> None:
             PROGRESS_BAR_SIMULACAO.value = valor / 100.0
             PROGRESS_BAR_SIMULACAO.update()
 
-        # --- Executa simulação em thread separada ---
-        def run():
-            resultado = _run_sim(
-                escolha_luva=escolha_luva,
-                DIAM_LUVA=DIAM_LUVA,
-                LARG_RECT=LARG_RECT,
-                ALT_RECT=ALT_RECT,
-                QTD_RECT=QTD_RECT,
-                excluir_circular=excluir_circular,
-                DIAM_REDONDO_TOTAL=DIAM_REDONDO_TOTAL,
-                DIAM_MICRO_FIO=DIAM_MICRO_FIO,
-                LIMITE_OCUPACAO=LIMITE_OCUPACAO,
-                escolha_cabo=escolha_cabo,
-                on_log=on_log,
-                on_progress=on_progress,
-            )
-
-            if "erro" in resultado:
-                CONTAINER_VALIDACAO_SIMULACAO.bgcolor = ft.Colors.with_opacity(
-                    0.2, ft.Colors.RED_500
+        def run() -> None:
+            try:
+                resultado = _run_sim(
+                    escolha_luva=escolha_luva,
+                    DIAM_LUVA=DIAM_LUVA,
+                    LARG_RECT=LARG_RECT,
+                    ALT_RECT=ALT_RECT,
+                    QTD_RECT=QTD_RECT,
+                    excluir_circular=excluir_circular,
+                    DIAM_REDONDO_TOTAL=DIAM_REDONDO_TOTAL,
+                    DIAM_MICRO_FIO=DIAM_MICRO_FIO,
+                    LIMITE_OCUPACAO=LIMITE_OCUPACAO,
+                    escolha_cabo=escolha_cabo,
+                    on_log=on_log,
+                    on_progress=on_progress,
                 )
-                TEXTO_VALIDACAO_SIMULACAO.value = resultado["erro"]
-                TEXTO_VALIDACAO_SIMULACAO.color = ft.Colors.RED_300
-                CONTAINER_VALIDACAO_SIMULACAO.visible = True
-                TEXTO_VALIDACAO_SIMULACAO.visible = True
-                self.page.update()
+            except Exception as ex:
+                self._mostrar_erro_ui(f"Erro inesperado na simulação: {ex}")
                 return
 
-            # Salva imagem e carrega como base64 para exibição
-            caminho_img = salvar_imagem(resultado)
-            with open(caminho_img, "rb") as f:
-                IMAGEM_SIMULACAO.src_base64 = base64.b64encode(f.read()).decode("utf-8")
-            IMAGEM_SIMULACAO.visible = True
+            if "erro" in resultado:
+                self._mostrar_erro_ui(resultado["erro"])
+                return
 
-            res = resultado
+            # Gera e exibe imagem
+            try:
+                caminho_img = salvar_imagem(resultado)
+                with open(caminho_img, "rb") as f:
+                    IMAGEM_SIMULACAO.src_base64 = base64.b64encode(f.read()).decode("utf-8")
+                IMAGEM_SIMULACAO.visible = True
+                self._caminho_img = caminho_img
+            except Exception as ex:
+                on_log(4, f"Aviso: falha ao gerar imagem ({ex})")
+
             self._resultado = resultado
-            self._caminho_img = caminho_img
+            res = resultado
 
             # Dados das Seções
             TEXT_DADOS_DAS_SECOES.visible = True
 
             TITULO_FIO_RETANGULAR.visible = True
-            ICONE_PERGUNTA_FIO_RETANGULAR.tooltip = f"Unitário: {res['LARG_RECT']}x{res['ALT_RECT']} mm | Qtd: {res['QTD_RECT']}"
+            ICONE_PERGUNTA_FIO_RETANGULAR.tooltip = (
+                f"Unitário: {res['LARG_RECT']}x{res['ALT_RECT']} mm | Qtd: {res['QTD_RECT']}"
+            )
             ICONE_PERGUNTA_FIO_RETANGULAR.visible = True
             VALOR_FIO_RETANGULAR.value = f"{res['area_rect_total']:.2f} mm²"
             VALOR_FIO_RETANGULAR.visible = True
@@ -492,9 +488,7 @@ class Home(ft.Container):
             TEXTO_INDICADORES.visible = True
 
             TITULO_FIOS.visible = True
-            VALOR_INDICADOR_FIOS.value = (
-                f"{len(res['melhor_rects'])} / {res['QTD_RECT']}"
-            )
+            VALOR_INDICADOR_FIOS.value = f"{len(res['melhor_rects'])} / {res['QTD_RECT']}"
             VALOR_INDICADOR_FIOS.visible = True
 
             TITULO_OCUPACAO.visible = True
@@ -507,16 +501,12 @@ class Home(ft.Container):
                 ICONE_DESVIO_OCUPACAO.name = ft.CupertinoIcons.ARROW_DOWN
                 ICONE_DESVIO_OCUPACAO.color = ft.Colors.GREEN_200
                 VALOR_DESVIO_OCUPACAO.color = ft.Colors.GREEN_200
-                CONTAINER_DESVIO_OCUPACAO.bgcolor = ft.Colors.with_opacity(
-                    0.2, ft.Colors.GREEN_500
-                )
+                CONTAINER_DESVIO_OCUPACAO.bgcolor = ft.Colors.with_opacity(0.2, ft.Colors.GREEN_500)
             else:
                 ICONE_DESVIO_OCUPACAO.name = ft.CupertinoIcons.ARROW_UP
                 ICONE_DESVIO_OCUPACAO.color = ft.Colors.RED_200
                 VALOR_DESVIO_OCUPACAO.color = ft.Colors.RED_200
-                CONTAINER_DESVIO_OCUPACAO.bgcolor = ft.Colors.with_opacity(
-                    0.2, ft.Colors.RED_500
-                )
+                CONTAINER_DESVIO_OCUPACAO.bgcolor = ft.Colors.with_opacity(0.2, ft.Colors.RED_500)
             ICONE_DESVIO_OCUPACAO.visible = True
             VALOR_DESVIO_OCUPACAO.visible = True
             CONTAINER_DESVIO_OCUPACAO.visible = True
@@ -533,13 +523,14 @@ class Home(ft.Container):
                 and res["qtd_micro_fios"] > 0
                 and len(res["micro_fios"]) < res["qtd_micro_fios"]
             )
-            simulacao_aprovada = not (
-                falha_retangulos or falha_ocupacao or falha_circular
-            )
+            simulacao_aprovada = not (falha_retangulos or falha_ocupacao or falha_circular)
             self._simulacao_aprovada = simulacao_aprovada
 
             if simulacao_aprovada:
-                msg = f"Aprovada | Orientação: {res['orientacao_final']} | Fios: {len(res['melhor_rects'])}/{res['QTD_RECT']}"
+                msg = (
+                    f"Aprovada | Orientação: {res['orientacao_final']} "
+                    f"| Fios: {len(res['melhor_rects'])}/{res['QTD_RECT']}"
+                )
                 if not res["excluir_circular"] and res["qtd_micro_fios"] > 0:
                     pct = len(res["micro_fios"]) / res["qtd_micro_fios"] * 100
                     msg += f" | Circular: {pct:.0f}%"
@@ -552,9 +543,7 @@ class Home(ft.Container):
             else:
                 motivos = []
                 if falha_retangulos:
-                    motivos.append(
-                        f"Fios: {len(res['melhor_rects'])}/{res['QTD_RECT']}"
-                    )
+                    motivos.append(f"Fios: {len(res['melhor_rects'])}/{res['QTD_RECT']}")
                 if falha_circular:
                     pct = len(res["micro_fios"]) / res["qtd_micro_fios"] * 100
                     motivos.append(f"Circular: {pct:.0f}%")
@@ -578,11 +567,12 @@ class Home(ft.Container):
 
         threading.Thread(target=run, daemon=True).start()
 
-    def baixar_relatorio(self, e):
+    # --------------------------------------------------------------------------
+    # Relatório PDF
+    # --------------------------------------------------------------------------
+    def baixar_relatorio(self, e) -> None:
         if self._resultado is None:
             return
-        import datetime
-
         fuso_br = datetime.timezone(datetime.timedelta(hours=-3))
         data_hoje = datetime.datetime.now(fuso_br).strftime("%d-%m-%Y")
         self._file_picker.save_file(
@@ -592,27 +582,38 @@ class Home(ft.Container):
         )
         self.page.update()
 
-    def on_file_picker_result(self, e: ft.FilePickerResultEvent):
+    def on_file_picker_result(self, e: ft.FilePickerResultEvent) -> None:
         if e.path is None:
             return
-        pdf_bytes = create_pdf(
-            self._resultado,
-            self._caminho_img,
-            self._simulacao_aprovada,
-            TEXTO_VALIDACAO_SIMULACAO.value,
-        )
-        with open(e.path, "wb") as f:
-            f.write(pdf_bytes)
-        if self._caminho_img and os.path.exists(self._caminho_img):
-            os.remove(self._caminho_img)
-        self.page.open(
-            ft.SnackBar(
-                content=ft.Text(f"Relatório salvo em: {e.path}"),
-                bgcolor=ft.Colors.with_opacity(0.9, ft.Colors.GREEN_800),
+        try:
+            pdf_bytes = create_pdf(
+                self._resultado,
+                self._caminho_img,
+                self._simulacao_aprovada,
+                TEXTO_VALIDACAO_SIMULACAO.value,
             )
-        )
+            with open(e.path, "wb") as f:
+                f.write(pdf_bytes)
+            if self._caminho_img and os.path.exists(self._caminho_img):
+                os.remove(self._caminho_img)
+            self.page.open(
+                ft.SnackBar(
+                    content=ft.Text(f"Relatório salvo em: {e.path}"),
+                    bgcolor=ft.Colors.with_opacity(0.9, ft.Colors.GREEN_800),
+                )
+            )
+        except Exception as ex:
+            self.page.open(
+                ft.SnackBar(
+                    content=ft.Text(f"Erro ao salvar relatório: {ex}"),
+                    bgcolor=ft.Colors.with_opacity(0.9, ft.Colors.RED_800),
+                )
+            )
 
-    def build(self):
+    # --------------------------------------------------------------------------
+    # Layout
+    # --------------------------------------------------------------------------
+    def build(self) -> ft.Row:
         return ft.Row(
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -628,7 +629,6 @@ class Home(ft.Container):
                                 width=True,
                                 height=120,
                                 padding=ft.padding.only(top=50, right=10, left=10),
-                                # bgcolor="red",
                                 content=ft.Column(
                                     width=True,
                                     height=50,
@@ -653,7 +653,6 @@ class Home(ft.Container):
                                 ),
                             ),
                             ft.Container(height=20),
-                            ## Progress Bar
                             ft.Container(
                                 width=True,
                                 height=50,
@@ -661,14 +660,12 @@ class Home(ft.Container):
                                 padding=ft.padding.only(right=30, left=30),
                                 content=PROGRESS_BAR_SIMULACAO,
                             ),
-                            ## DADOS GERAIS
                             ft.Container(
                                 expand=True,
                                 content=ft.Row(
                                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
                                     controls=[
-                                        ## Container dados
                                         ft.Container(
                                             expand=True,
                                             padding=10,
@@ -676,10 +673,8 @@ class Home(ft.Container):
                                                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                                                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                                                 controls=[
-                                                    ## Dados da seção
                                                     ft.Container(
                                                         expand=True,
-                                                        # bgcolor="red",
                                                         content=ft.Column(
                                                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                                                             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -687,9 +682,7 @@ class Home(ft.Container):
                                                                 ft.Container(
                                                                     width=True,
                                                                     height=50,
-                                                                    padding=ft.padding.only(
-                                                                        left=5
-                                                                    ),
+                                                                    padding=ft.padding.only(left=5),
                                                                     alignment=ft.alignment.center_left,
                                                                     content=TEXT_DADOS_DAS_SECOES,
                                                                 ),
@@ -700,7 +693,6 @@ class Home(ft.Container):
                                                                         alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                                                                         vertical_alignment=ft.CrossAxisAlignment.CENTER,
                                                                         controls=[
-                                                                            ## Fio retangular
                                                                             ft.Container(
                                                                                 width=200,
                                                                                 height=True,
@@ -721,7 +713,6 @@ class Home(ft.Container):
                                                                                     ],
                                                                                 ),
                                                                             ),
-                                                                            ## Cabo Cirbular
                                                                             ft.Container(
                                                                                 width=200,
                                                                                 height=True,
@@ -735,7 +726,6 @@ class Home(ft.Container):
                                                                                     ],
                                                                                 ),
                                                                             ),
-                                                                            ##Luva
                                                                             ft.Container(
                                                                                 width=200,
                                                                                 height=True,
@@ -762,14 +752,9 @@ class Home(ft.Container):
                                                             ],
                                                         ),
                                                     ),
-                                                    ft.Divider(
-                                                        height=1,
-                                                        color=ft.Colors.GREY_900,
-                                                    ),
-                                                    ## Indicadores
+                                                    ft.Divider(height=1, color=ft.Colors.GREY_900),
                                                     ft.Container(
                                                         expand=True,
-                                                        # bgcolor="blue",
                                                         content=ft.Column(
                                                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                                                             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -777,9 +762,7 @@ class Home(ft.Container):
                                                                 ft.Container(
                                                                     width=True,
                                                                     height=50,
-                                                                    padding=ft.padding.only(
-                                                                        left=5
-                                                                    ),
+                                                                    padding=ft.padding.only(left=5),
                                                                     alignment=ft.alignment.center_left,
                                                                     content=TEXTO_INDICADORES,
                                                                 ),
@@ -801,9 +784,7 @@ class Home(ft.Container):
                                                                                         ft.Row(
                                                                                             alignment=ft.MainAxisAlignment.CENTER,
                                                                                             vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                                                                                            controls=[
-                                                                                                TITULO_FIOS
-                                                                                            ],
+                                                                                            controls=[TITULO_FIOS],
                                                                                         ),
                                                                                         VALOR_INDICADOR_FIOS,
                                                                                     ],
@@ -819,9 +800,7 @@ class Home(ft.Container):
                                                                                     controls=[
                                                                                         TITULO_OCUPACAO,
                                                                                         VALOR_INDICADOR_OCUPACAO,
-                                                                                        ft.Container(
-                                                                                            content=CONTAINER_DESVIO_OCUPACAO
-                                                                                        ),
+                                                                                        ft.Container(content=CONTAINER_DESVIO_OCUPACAO),
                                                                                     ],
                                                                                 ),
                                                                             ),
@@ -836,9 +815,7 @@ class Home(ft.Container):
                                                                                         ft.Row(
                                                                                             alignment=ft.MainAxisAlignment.CENTER,
                                                                                             vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                                                                                            controls=[
-                                                                                                TITULO_AREA_TOTAL
-                                                                                            ],
+                                                                                            controls=[TITULO_AREA_TOTAL],
                                                                                         ),
                                                                                         VALOR_AREA_TOTAL,
                                                                                     ],
@@ -853,7 +830,6 @@ class Home(ft.Container):
                                                 ],
                                             ),
                                         ),
-                                        ## Container Graph
                                         ft.Container(
                                             expand=True,
                                             alignment=ft.alignment.center,
@@ -863,14 +839,12 @@ class Home(ft.Container):
                                 ),
                             ),
                             ft.Container(height=20),
-                            ## VALIDACAO
                             ft.Container(
                                 width=True,
                                 height=40,
                                 padding=ft.padding.only(right=15, left=15),
                                 content=CONTAINER_VALIDACAO_SIMULACAO,
                             ),
-                            ## LOGS
                             ft.Container(
                                 width=True,
                                 height=300,
@@ -920,7 +894,6 @@ class Home(ft.Container):
                                 ),
                             ),
                             ft.Divider(height=1, color=ft.Colors.GREY_900),
-                            ## DEV
                             ft.Container(
                                 width=True,
                                 height=70,
@@ -928,10 +901,7 @@ class Home(ft.Container):
                                 content=ft.Row(
                                     alignment=ft.MainAxisAlignment.START,
                                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                                    controls=[
-                                        TITULO_DESENVOLVEDOR,
-                                        VALOR_DESENVOLVEDOR,
-                                    ],
+                                    controls=[TITULO_DESENVOLVEDOR, VALOR_DESENVOLVEDOR],
                                 ),
                             ),
                         ],

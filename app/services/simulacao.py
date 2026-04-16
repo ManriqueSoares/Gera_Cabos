@@ -9,40 +9,33 @@ import matplotlib.patches as patches
 from dataclasses import dataclass
 from typing import List, Optional, Callable
 
-# ==============================================================================
-# CONSTANTES
-# ==============================================================================
-OPCOES_LUVA = {
-    "25 mm²": 8.0,
-    "35 mm²": 9.0,
-    "50 mm²": 11.0,
-    "70 mm²": 13.0,
-    "95 mm²": 15.0,
-    "120 mm²": 17.0,
-    "150 mm²": 19.0,
-    "185 mm²": 21.0,
-    "240 mm²": 24.0,
-    "300 mm²": 24.5,
-    "400 mm²": 30.0,
-    "500 mm²": 33.0,
-    "630 mm²": 39.0,
-}
+from app.config.constants import OPCOES_LUVA, OPCOES_CABO_CIRCULAR
 
-OPCOES_CABO_CIRCULAR = {
-    "50 mm²": 9.15,
-    "70 mm²": 10.83,
-    "120 mm²": 14.77,
-    "185 mm²": 18.09,
-    "240 mm²": 23.3,
-    "300 mm²": 23.5,
-    "400 mm²": 29.1,
-    "500 mm²": 33.5,
-}
-
+# ==============================================================================
+# CONSTANTES INTERNAS
+# ==============================================================================
 _ASSETS_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "assets",
 )
+
+# Estratégias de posicionamento reutilizadas por _posicionar_retangulos e pela
+# seleção automática de luva. Qtd par não precisa tentar "Centro".
+_CONFIGS_PAR: list[tuple[int, str]] = [
+    (0, "DuploX"),
+    (0, "DuploY"),
+    (1, "DuploX"),
+    (1, "DuploY"),
+    (0, "DuploX_Full"),
+    (0, "DuploY_Full"),
+    (1, "DuploX_Full"),
+    (1, "DuploY_Full"),
+]
+_CONFIGS_IMPAR: list[tuple[int, str]] = [(0, "Centro"), (1, "Centro")] + _CONFIGS_PAR
+
+
+def _get_configs(qtd: int) -> list[tuple[int, str]]:
+    return _CONFIGS_PAR if qtd % 2 == 0 else _CONFIGS_IMPAR
 
 
 # ==============================================================================
@@ -117,43 +110,15 @@ def ponto_livre(
 def _posicionar_retangulos(
     grade: np.ndarray, QTD_RECT: int, r_luva: float, LARG_RECT: float, ALT_RECT: float
 ) -> tuple:
-    """Executa todas as estratégias e retorna (melhor_lista, orientacao_str)."""
-    melhor_rects = []
+    """Testa todas as estratégias e retorna (melhor_lista, orientacao_str)."""
+    melhor_rects: List[Retangulo] = []
     melhor_score = -1
     orientacao_final = ""
 
-    configs = []
-    if QTD_RECT % 2 == 0:
-        configs = [
-            (0, "DuploX"),
-            (0, "DuploY"),
-            (1, "DuploX"),
-            (1, "DuploY"),
-            (0, "DuploX_Full"),
-            (0, "DuploY_Full"),
-            (1, "DuploX_Full"),
-            (1, "DuploY_Full"),
-        ]
-    else:
-        configs = [
-            (0, "Centro"),
-            (1, "Centro"),
-            (0, "DuploX"),
-            (0, "DuploY"),
-            (1, "DuploX"),
-            (1, "DuploY"),
-            (0, "DuploX_Full"),
-            (0, "DuploY_Full"),
-            (1, "DuploX_Full"),
-            (1, "DuploY_Full"),
-        ]
-
-    for sentido, estrategia in configs:
+    for sentido, estrategia in _get_configs(QTD_RECT):
         w = LARG_RECT if sentido == 0 else ALT_RECT
         h = ALT_RECT if sentido == 0 else LARG_RECT
-
         rects_temp = _aplicar_estrategia(grade, estrategia, w, h, r_luva, QTD_RECT)
-
         if len(rects_temp) > melhor_score:
             melhor_score = len(rects_temp)
             melhor_rects = rects_temp
@@ -167,7 +132,7 @@ def _posicionar_retangulos(
 def _aplicar_estrategia(
     grade: np.ndarray, estrategia: str, w: float, h: float, r_luva: float, QTD_RECT: int
 ) -> List[Retangulo]:
-    rects_temp = []
+    rects_temp: List[Retangulo] = []
 
     if estrategia == "Centro":
         for _ in range(QTD_RECT):
@@ -292,19 +257,30 @@ def executar_simulacao(
         on_log(fase_idx, texto): fase 0=limpando, 1=luva, 2=retangular, 3=circular, 4=conclusão
         on_progress(valor_0_a_100): atualiza barra de progresso
 
-    Retorna dict com resultados ou {"erro": "mensagem"} em caso de falha fatal.
+    Retorna dict com resultados ou {"erro": "mensagem"} em caso de falha.
     """
 
-    def _log(fase_idx: int, texto: str):
+    def _log(fase_idx: int, texto: str) -> None:
         if on_log:
             on_log(fase_idx, texto)
 
-    def _progress(valor: int):
+    def _progress(valor: int) -> None:
         if on_progress:
             on_progress(valor)
 
-    start_time = time.time()
+    # --- Validação de entradas ---
+    if ALT_RECT <= 0 or LARG_RECT <= 0:
+        return {"erro": "Dimensões do fio retangular (Axial e Radial) devem ser maiores que zero."}
+    if QTD_RECT < 0:
+        return {"erro": "Quantidade de fios deve ser zero ou maior."}
+    if escolha_luva == "Personalizado" and DIAM_LUVA <= 0:
+        return {"erro": "Diâmetro personalizado da luva deve ser maior que zero."}
+    if not excluir_circular and DIAM_REDONDO_TOTAL <= 0:
+        return {"erro": "Diâmetro do cabo circular deve ser maior que zero."}
+    if DIAM_MICRO_FIO <= 0:
+        return {"erro": "Granularidade (diâmetro do micro-fio) deve ser maior que zero."}
 
+    start_time = time.time()
     _log(0, "Limpando simulação anterior e iniciando...")
 
     # --- Cálculos iniciais ---
@@ -337,43 +313,20 @@ def executar_simulacao(
                 break
 
             grade_cand = gerar_grade_ordenada(r_cand, 0.1)
-
-            configs_auto = []
-            if QTD_RECT % 2 == 0:
-                configs_auto = [
-                    (0, "DuploX"),
-                    (0, "DuploY"),
-                    (1, "DuploX"),
-                    (1, "DuploY"),
-                    (0, "DuploX_Full"),
-                    (0, "DuploY_Full"),
-                    (1, "DuploX_Full"),
-                    (1, "DuploY_Full"),
-                ]
-            else:
-                configs_auto = [
-                    (0, "Centro"),
-                    (1, "Centro"),
-                    (0, "DuploX"),
-                    (0, "DuploY"),
-                    (1, "DuploX"),
-                    (1, "DuploY"),
-                    (0, "DuploX_Full"),
-                    (0, "DuploY_Full"),
-                    (1, "DuploX_Full"),
-                    (1, "DuploY_Full"),
-                ]
-
-            encaixou_cand = False
-            for sentido, estrategia in configs_auto:
-                w = LARG_RECT if sentido == 0 else ALT_RECT
-                h = ALT_RECT if sentido == 0 else LARG_RECT
-                rects_temp = _aplicar_estrategia(
-                    grade_cand, estrategia, w, h, r_cand, QTD_RECT
+            encaixou_cand = any(
+                len(
+                    _aplicar_estrategia(
+                        grade_cand,
+                        estrategia,
+                        LARG_RECT if sentido == 0 else ALT_RECT,
+                        ALT_RECT if sentido == 0 else LARG_RECT,
+                        r_cand,
+                        QTD_RECT,
+                    )
                 )
-                if len(rects_temp) == QTD_RECT:
-                    encaixou_cand = True
-                    break
+                == QTD_RECT
+                for sentido, estrategia in _get_configs(QTD_RECT)
+            )
 
             if encaixou_cand:
                 DIAM_LUVA = diam
@@ -402,7 +355,10 @@ def executar_simulacao(
 
     if area_total_ocupada > area_luva:
         return {
-            "erro": f"ERRO FATAL: A área dos cabos ({area_total_ocupada:.2f} mm²) é maior que a área da luva ({area_luva:.2f} mm²)!"
+            "erro": (
+                f"Área dos cabos ({area_total_ocupada:.2f} mm²) excede a área da luva "
+                f"({area_luva:.2f} mm²). Reduza as dimensões ou escolha uma luva maior."
+            )
         }
 
     # --- Fase 2: Posicionamento dos retângulos ---
@@ -418,7 +374,7 @@ def executar_simulacao(
     _progress(66)
 
     # --- Fase 3: Cabo circular ---
-    micro_fios = []
+    micro_fios: List[Circulo] = []
     if not excluir_circular:
         _log(3, "Fase 3: Posicionando Cabo Circular...")
         t_phase = time.time()
@@ -476,10 +432,7 @@ def executar_simulacao(
 # GERAÇÃO E SALVAMENTO DA IMAGEM
 # ==============================================================================
 def salvar_imagem(res: dict, nome_arquivo: str = "simulacao.png") -> str:
-    """
-    Gera o gráfico matplotlib e salva em assets/<nome_arquivo>.
-    Retorna o caminho absoluto do arquivo salvo.
-    """
+    """Gera o gráfico matplotlib e salva em assets/<nome_arquivo>. Retorna o caminho absoluto."""
     os.makedirs(_ASSETS_DIR, exist_ok=True)
     caminho = os.path.join(_ASSETS_DIR, nome_arquivo)
 
