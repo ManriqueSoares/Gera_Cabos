@@ -2,7 +2,8 @@ import time
 import os
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from dataclasses import dataclass
@@ -12,33 +13,55 @@ from typing import List, Optional, Callable
 # CONSTANTES
 # ==============================================================================
 OPCOES_LUVA = {
-    "25 mm²": 8.0, "35 mm²": 9.0, "50 mm²": 11.0, "70 mm²": 13.0,
-    "95 mm²": 15.0, "120 mm²": 17.0, "150 mm²": 19.0, "185 mm²": 21.0,
-    "240 mm²": 24.0, "300 mm²": 24.5, "400 mm²": 30.0, "500 mm²": 33.0,
-    "630 mm²": 39.0
+    "25 mm²": 8.0,
+    "35 mm²": 9.0,
+    "50 mm²": 11.0,
+    "70 mm²": 13.0,
+    "95 mm²": 15.0,
+    "120 mm²": 17.0,
+    "150 mm²": 19.0,
+    "185 mm²": 21.0,
+    "240 mm²": 24.0,
+    "300 mm²": 24.5,
+    "400 mm²": 30.0,
+    "500 mm²": 33.0,
+    "630 mm²": 39.0,
 }
 
 OPCOES_CABO_CIRCULAR = {
-    "50 mm²": 9.15, "70 mm²": 10.83, "120 mm²": 14.77,
-    "185 mm²": 18.09, "240 mm²": 23.3, "300 mm²": 23.5,
-    "400 mm²": 29.1, "500 mm²": 33.5
+    "50 mm²": 9.15,
+    "70 mm²": 10.83,
+    "120 mm²": 14.77,
+    "185 mm²": 18.09,
+    "240 mm²": 23.3,
+    "300 mm²": 23.5,
+    "400 mm²": 29.1,
+    "500 mm²": 33.5,
 }
 
 _ASSETS_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    'assets'
+    "assets",
 )
+
 
 # ==============================================================================
 # CLASSES DE DADOS
 # ==============================================================================
 @dataclass
 class Retangulo:
-    x: float; y: float; w: float; h: float
+    x: float
+    y: float
+    w: float
+    h: float
+
 
 @dataclass
 class Circulo:
-    cx: float; cy: float; r: float
+    cx: float
+    cy: float
+    r: float
+
 
 # ==============================================================================
 # FUNÇÕES AUXILIARES
@@ -49,15 +72,20 @@ def gerar_grade_ordenada(raio: float, passo: float) -> np.ndarray:
     dist = xx**2 + yy**2
     mask = dist <= raio**2
     pontos = np.column_stack((xx[mask], yy[mask]))
-    indices = np.argsort(pontos[:, 0]**2 + pontos[:, 1]**2)
+    indices = np.argsort(pontos[:, 0] ** 2 + pontos[:, 1] ** 2)
     return pontos[indices]
 
 
-def validar_rect(x: float, y: float, w: float, h: float,
-                 r_luva: float, rects: List[Retangulo]) -> bool:
+def validar_rect(
+    x: float, y: float, w: float, h: float, r_luva: float, rects: List[Retangulo]
+) -> bool:
     r2 = r_luva**2
-    if (x**2 + y**2 > r2) or ((x + w)**2 + y**2 > r2) or \
-       (x**2 + (y + h)**2 > r2) or ((x + w)**2 + (y + h)**2 > r2):
+    if (
+        (x**2 + y**2 > r2)
+        or ((x + w) ** 2 + y**2 > r2)
+        or (x**2 + (y + h) ** 2 > r2)
+        or ((x + w) ** 2 + (y + h) ** 2 > r2)
+    ):
         return False
     for r in rects:
         if x < r.x + r.w and x + w > r.x and y < r.y + r.h and y + h > r.y:
@@ -65,23 +93,30 @@ def validar_rect(x: float, y: float, w: float, h: float,
     return True
 
 
-def ponto_livre(cx: float, cy: float, r_micro: float, r_luva: float,
-                rects: List[Retangulo], micro_circs: List[Circulo]) -> bool:
+def ponto_livre(
+    cx: float,
+    cy: float,
+    r_micro: float,
+    r_luva: float,
+    rects: List[Retangulo],
+    micro_circs: List[Circulo],
+) -> bool:
     if np.sqrt(cx**2 + cy**2) + r_micro > r_luva:
         return False
     for r in rects:
         closest_x = max(r.x, min(cx, r.x + r.w))
         closest_y = max(r.y, min(cy, r.y + r.h))
-        if (cx - closest_x)**2 + (cy - closest_y)**2 < r_micro**2:
+        if (cx - closest_x) ** 2 + (cy - closest_y) ** 2 < r_micro**2:
             return False
     for c in micro_circs:
-        if (cx - c.cx)**2 + (cy - c.cy)**2 < (2 * r_micro)**2:
+        if (cx - c.cx) ** 2 + (cy - c.cy) ** 2 < (2 * r_micro) ** 2:
             return False
     return True
 
 
-def _posicionar_retangulos(grade: np.ndarray, QTD_RECT: int, r_luva: float,
-                           LARG_RECT: float, ALT_RECT: float) -> tuple:
+def _posicionar_retangulos(
+    grade: np.ndarray, QTD_RECT: int, r_luva: float, LARG_RECT: float, ALT_RECT: float
+) -> tuple:
     """Executa todas as estratégias e retorna (melhor_lista, orientacao_str)."""
     melhor_rects = []
     melhor_score = -1
@@ -90,14 +125,27 @@ def _posicionar_retangulos(grade: np.ndarray, QTD_RECT: int, r_luva: float,
     configs = []
     if QTD_RECT % 2 == 0:
         configs = [
-            (0, "DuploX"), (0, "DuploY"), (1, "DuploX"), (1, "DuploY"),
-            (0, "DuploX_Full"), (0, "DuploY_Full"), (1, "DuploX_Full"), (1, "DuploY_Full")
+            (0, "DuploX"),
+            (0, "DuploY"),
+            (1, "DuploX"),
+            (1, "DuploY"),
+            (0, "DuploX_Full"),
+            (0, "DuploY_Full"),
+            (1, "DuploX_Full"),
+            (1, "DuploY_Full"),
         ]
     else:
         configs = [
-            (0, "Centro"), (1, "Centro"),
-            (0, "DuploX"), (0, "DuploY"), (1, "DuploX"), (1, "DuploY"),
-            (0, "DuploX_Full"), (0, "DuploY_Full"), (1, "DuploX_Full"), (1, "DuploY_Full")
+            (0, "Centro"),
+            (1, "Centro"),
+            (0, "DuploX"),
+            (0, "DuploY"),
+            (1, "DuploX"),
+            (1, "DuploY"),
+            (0, "DuploX_Full"),
+            (0, "DuploY_Full"),
+            (1, "DuploX_Full"),
+            (1, "DuploY_Full"),
         ]
 
     for sentido, estrategia in configs:
@@ -116,9 +164,9 @@ def _posicionar_retangulos(grade: np.ndarray, QTD_RECT: int, r_luva: float,
     return melhor_rects, orientacao_final
 
 
-def _aplicar_estrategia(grade: np.ndarray, estrategia: str,
-                        w: float, h: float, r_luva: float,
-                        QTD_RECT: int) -> List[Retangulo]:
+def _aplicar_estrategia(
+    grade: np.ndarray, estrategia: str, w: float, h: float, r_luva: float, QTD_RECT: int
+) -> List[Retangulo]:
     rects_temp = []
 
     if estrategia == "Centro":
@@ -132,8 +180,8 @@ def _aplicar_estrategia(grade: np.ndarray, estrategia: str,
     elif estrategia == "DuploX":
         mask_L = grade[:, 0] <= -w / 2 + 1e-5
         mask_R = grade[:, 0] >= w / 2 - 1e-5
-        d_L = (grade[mask_L][:, 0] + w / 2)**2 + grade[mask_L][:, 1]**2
-        d_R = (grade[mask_R][:, 0] - w / 2)**2 + grade[mask_R][:, 1]**2
+        d_L = (grade[mask_L][:, 0] + w / 2) ** 2 + grade[mask_L][:, 1] ** 2
+        d_R = (grade[mask_R][:, 0] - w / 2) ** 2 + grade[mask_R][:, 1] ** 2
         g_L = grade[mask_L][np.argsort(d_L)]
         g_R = grade[mask_R][np.argsort(d_R)]
         idx_L, idx_R = 0, 0
@@ -141,25 +189,29 @@ def _aplicar_estrategia(grade: np.ndarray, estrategia: str,
             placed = False
             if i % 2 == 0:
                 while idx_L < len(g_L):
-                    p = g_L[idx_L]; idx_L += 1
+                    p = g_L[idx_L]
+                    idx_L += 1
                     tx, ty = p[0] - w / 2, p[1] - h / 2
                     if validar_rect(tx, ty, w, h, r_luva, rects_temp):
                         rects_temp.append(Retangulo(tx, ty, w, h))
-                        placed = True; break
+                        placed = True
+                        break
             else:
                 while idx_R < len(g_R):
-                    p = g_R[idx_R]; idx_R += 1
+                    p = g_R[idx_R]
+                    idx_R += 1
                     tx, ty = p[0] - w / 2, p[1] - h / 2
                     if validar_rect(tx, ty, w, h, r_luva, rects_temp):
                         rects_temp.append(Retangulo(tx, ty, w, h))
-                        placed = True; break
+                        placed = True
+                        break
             if not placed:
                 break
 
     elif estrategia == "DuploX_Full":
         d2 = np.minimum(
-            (grade[:, 0] + w / 2)**2 + grade[:, 1]**2,
-            (grade[:, 0] - w / 2)**2 + grade[:, 1]**2
+            (grade[:, 0] + w / 2) ** 2 + grade[:, 1] ** 2,
+            (grade[:, 0] - w / 2) ** 2 + grade[:, 1] ** 2,
         )
         grade_sorted = grade[np.argsort(d2)]
         for _ in range(QTD_RECT):
@@ -172,8 +224,8 @@ def _aplicar_estrategia(grade: np.ndarray, estrategia: str,
     elif estrategia == "DuploY":
         mask_T = grade[:, 1] >= h / 2 - 1e-5
         mask_B = grade[:, 1] <= -h / 2 + 1e-5
-        d_T = grade[mask_T][:, 0]**2 + (grade[mask_T][:, 1] - h / 2)**2
-        d_B = grade[mask_B][:, 0]**2 + (grade[mask_B][:, 1] + h / 2)**2
+        d_T = grade[mask_T][:, 0] ** 2 + (grade[mask_T][:, 1] - h / 2) ** 2
+        d_B = grade[mask_B][:, 0] ** 2 + (grade[mask_B][:, 1] + h / 2) ** 2
         g_T = grade[mask_T][np.argsort(d_T)]
         g_B = grade[mask_B][np.argsort(d_B)]
         idx_T, idx_B = 0, 0
@@ -181,25 +233,29 @@ def _aplicar_estrategia(grade: np.ndarray, estrategia: str,
             placed = False
             if i % 2 == 0:
                 while idx_T < len(g_T):
-                    p = g_T[idx_T]; idx_T += 1
+                    p = g_T[idx_T]
+                    idx_T += 1
                     tx, ty = p[0] - w / 2, p[1] - h / 2
                     if validar_rect(tx, ty, w, h, r_luva, rects_temp):
                         rects_temp.append(Retangulo(tx, ty, w, h))
-                        placed = True; break
+                        placed = True
+                        break
             else:
                 while idx_B < len(g_B):
-                    p = g_B[idx_B]; idx_B += 1
+                    p = g_B[idx_B]
+                    idx_B += 1
                     tx, ty = p[0] - w / 2, p[1] - h / 2
                     if validar_rect(tx, ty, w, h, r_luva, rects_temp):
                         rects_temp.append(Retangulo(tx, ty, w, h))
-                        placed = True; break
+                        placed = True
+                        break
             if not placed:
                 break
 
     elif estrategia == "DuploY_Full":
         d2 = np.minimum(
-            grade[:, 0]**2 + (grade[:, 1] - h / 2)**2,
-            grade[:, 0]**2 + (grade[:, 1] + h / 2)**2
+            grade[:, 0] ** 2 + (grade[:, 1] - h / 2) ** 2,
+            grade[:, 0] ** 2 + (grade[:, 1] + h / 2) ** 2,
         )
         grade_sorted = grade[np.argsort(d2)]
         for _ in range(QTD_RECT):
@@ -210,6 +266,7 @@ def _aplicar_estrategia(grade: np.ndarray, estrategia: str,
                     break
 
     return rects_temp
+
 
 # ==============================================================================
 # FUNÇÃO PRINCIPAL DE SIMULAÇÃO
@@ -284,21 +341,36 @@ def executar_simulacao(
             configs_auto = []
             if QTD_RECT % 2 == 0:
                 configs_auto = [
-                    (0, "DuploX"), (0, "DuploY"), (1, "DuploX"), (1, "DuploY"),
-                    (0, "DuploX_Full"), (0, "DuploY_Full"), (1, "DuploX_Full"), (1, "DuploY_Full")
+                    (0, "DuploX"),
+                    (0, "DuploY"),
+                    (1, "DuploX"),
+                    (1, "DuploY"),
+                    (0, "DuploX_Full"),
+                    (0, "DuploY_Full"),
+                    (1, "DuploX_Full"),
+                    (1, "DuploY_Full"),
                 ]
             else:
                 configs_auto = [
-                    (0, "Centro"), (1, "Centro"),
-                    (0, "DuploX"), (0, "DuploY"), (1, "DuploX"), (1, "DuploY"),
-                    (0, "DuploX_Full"), (0, "DuploY_Full"), (1, "DuploX_Full"), (1, "DuploY_Full")
+                    (0, "Centro"),
+                    (1, "Centro"),
+                    (0, "DuploX"),
+                    (0, "DuploY"),
+                    (1, "DuploX"),
+                    (1, "DuploY"),
+                    (0, "DuploX_Full"),
+                    (0, "DuploY_Full"),
+                    (1, "DuploX_Full"),
+                    (1, "DuploY_Full"),
                 ]
 
             encaixou_cand = False
             for sentido, estrategia in configs_auto:
                 w = LARG_RECT if sentido == 0 else ALT_RECT
                 h = ALT_RECT if sentido == 0 else LARG_RECT
-                rects_temp = _aplicar_estrategia(grade_cand, estrategia, w, h, r_cand, QTD_RECT)
+                rects_temp = _aplicar_estrategia(
+                    grade_cand, estrategia, w, h, r_cand, QTD_RECT
+                )
                 if len(rects_temp) == QTD_RECT:
                     encaixou_cand = True
                     break
@@ -329,7 +401,9 @@ def executar_simulacao(
         qtd_micro_fios = int((area_redondo_total * 0.90) / area_micro)
 
     if area_total_ocupada > area_luva:
-        return {"erro": f"ERRO FATAL: A área dos cabos ({area_total_ocupada:.2f} mm²) é maior que a área da luva ({area_luva:.2f} mm²)!"}
+        return {
+            "erro": f"ERRO FATAL: A área dos cabos ({area_total_ocupada:.2f} mm²) é maior que a área da luva ({area_luva:.2f} mm²)!"
+        }
 
     # --- Fase 2: Posicionamento dos retângulos ---
     _log(2, "Fase 2: Posicionando Fio Retangular...")
@@ -397,6 +471,7 @@ def executar_simulacao(
         "DIAM_MICRO_FIO": DIAM_MICRO_FIO,
     }
 
+
 # ==============================================================================
 # GERAÇÃO E SALVAMENTO DA IMAGEM
 # ==============================================================================
@@ -412,22 +487,27 @@ def salvar_imagem(res: dict, nome_arquivo: str = "simulacao.png") -> str:
 
     fig, ax = plt.subplots(figsize=(5, 5))
 
-    ax.add_patch(patches.Circle((0, 0), r_luva, color='#F0F0F0', zorder=0))
-    ax.add_patch(patches.Circle((0, 0), r_luva, fill=False, color='black', lw=0.75, zorder=10))
+    ax.add_patch(patches.Circle((0, 0), r_luva, color="#F0F0F0", zorder=0))
+    ax.add_patch(
+        patches.Circle((0, 0), r_luva, fill=False, color="black", lw=0.75, zorder=10)
+    )
 
     for r in res["melhor_rects"]:
-        ax.add_patch(patches.Rectangle((r.x, r.y), r.w, r.h,
-                                       ec='black', fc='#4169E1', zorder=5, lw=0.5))
+        ax.add_patch(
+            patches.Rectangle(
+                (r.x, r.y), r.w, r.h, ec="black", fc="#4169E1", zorder=5, lw=0.5
+            )
+        )
 
     for c in res["micro_fios"]:
-        ax.add_patch(patches.Circle((c.cx, c.cy), c.r, color='#FF8C00', zorder=4))
+        ax.add_patch(patches.Circle((c.cx, c.cy), c.r, color="#FF8C00", zorder=4))
 
-    ax.axhline(0, color='red', linewidth=0.6, linestyle='--', zorder=11)
-    ax.axvline(0, color='red', linewidth=0.6, linestyle='--', zorder=11)
+    ax.axhline(0, color="red", linewidth=0.6, linestyle="--", zorder=11)
+    ax.axvline(0, color="red", linewidth=0.6, linestyle="--", zorder=11)
 
     ax.set_xlim(-r_luva * 1.1, r_luva * 1.1)
     ax.set_ylim(-r_luva * 1.1, r_luva * 1.1)
-    ax.set_aspect('equal')
+    ax.set_aspect("equal")
 
     max_tick = int(np.ceil(res["DIAM_LUVA"]))
     max_tick = ((max_tick + 4) // 5) * 5
@@ -438,13 +518,15 @@ def salvar_imagem(res: dict, nome_arquivo: str = "simulacao.png") -> str:
     ax.set_yticks(tick_positions)
     ax.set_xticklabels(tick_labels)
     ax.set_yticklabels(tick_labels)
-    ax.tick_params(axis='both', which='major', labelsize=6)
+    ax.tick_params(axis="both", which="major", labelsize=6)
     ax.set_xlabel("Radial", fontsize=7)
     ax.set_ylabel("Axial", fontsize=7)
-    ax.grid(True, linestyle=':', linewidth=0.4, color='grey')
-    ax.set_title(f"Luva {res['nome_exibicao']} - Diâmetro {res['DIAM_LUVA']} mm", fontsize=9)
+    ax.grid(True, linestyle=":", linewidth=0.4, color="grey")
+    ax.set_title(
+        f"Luva {res['nome_exibicao']} - Diâmetro {res['DIAM_LUVA']} mm", fontsize=9
+    )
 
-    fig.savefig(caminho, format='png', dpi=300, bbox_inches='tight')
+    fig.savefig(caminho, format="png", dpi=300, bbox_inches="tight")
     plt.close(fig)
 
     return caminho

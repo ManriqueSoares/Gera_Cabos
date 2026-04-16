@@ -2,6 +2,7 @@ import flet as ft
 from app.layout.raiz import raiz
 from app.layout.pages.home import Home
 
+
 def main(page: ft.Page):
 
     home_page = Home(page)
@@ -12,13 +13,9 @@ def main(page: ft.Page):
     page.window.height = 700
     page.padding = 0
     page.theme_mode = "dark"
-    page.add(
-        ft.Container(
-            expand=True,
-            content=raiz
-        )
-    )
+    page.add(ft.Container(expand=True, content=raiz))
     page.update()
+
 
 if __name__ == "__main__":
     ft.app(target=main)
