@@ -1,11 +1,21 @@
 import flet as ft
+import os
 import time
+import threading
+import base64
 from app.layout.widgets.widgets import *
+from app.services.simulacao import (
+    executar_simulacao as _run_sim,
+    salvar_imagem,
+    OPCOES_LUVA,
+    OPCOES_CABO_CIRCULAR,
+)
+from app.services.gera_relatorio import create_pdf
 
 class Home(ft.Container):
     def __init__(self, page: ft.Page):
         super().__init__()
-        
+
         ## ADD FUNCS AOS BUTTONS
         BOTAO_CLOSE_SIDBAR.on_click = self.close_sidebar
         BOTAO_OPEN_SIDBAR.on_click = self.open_sidbar
@@ -17,6 +27,8 @@ class Home(ft.Container):
         ENTRADA_TEXT_GRANULARIDADE.on_change = self.escrevendo_entrada_granularidade
         CHECK_BOX_EXCLUIR_CABO_CIRCULAR.on_change = self.checkbox_excluir_cabo_circular_change
         BOTAO_ALTERAR_TEMA.on_click = self.alterar_tema
+        ELEVATE_BUTTON_EXECUTAR_SIMULACAO.on_click = self.executar_simulacao
+        BOTAO_BAIXAR_RELATORIO.on_click = self.baixar_relatorio
         ## SIDBAR
         self.sidbar = ft.Container(
                     width=310,
@@ -143,6 +155,14 @@ class Home(ft.Container):
         """  --------------------------------------------------------- CONFIG FRAME ---------------------------------------------------------  """
         self.page = page
         self.expand = True
+
+        self._resultado = None
+        self._caminho_img = None
+        self._simulacao_aprovada = False
+
+        self._file_picker = ft.FilePicker(on_result=self.on_file_picker_result)
+        self.page.overlay.append(self._file_picker)
+
         self.content = self.build()
         """  --------------------------------------------------------------------------------------------------------------------------------  """
 
@@ -322,6 +342,246 @@ class Home(ft.Container):
         ICONE_PERGUNTA_GRANULARIDADE.update()
         SLIDER_GRANULARIDADE.update()
 
+    def executar_simulacao(self, e):
+        # --- Leitura e validação dos inputs ---
+        try:
+            ALT_RECT = float(ENTRADA_TEXT_AXIAL.value or 0)
+            LARG_RECT = float(ENTRADA_TEXT_RADIAL.value or 0)
+            QTD_RECT = int(float(ENTRADA_TEXT_QUANTIDADE.value or 0))
+        except ValueError:
+            CONTAINER_VALIDACAO_SIMULACAO.bgcolor = ft.Colors.with_opacity(0.2, ft.Colors.RED_500)
+            TEXTO_VALIDACAO_SIMULACAO.value = "Erro: preencha corretamente Axial, Radial e Quantidade."
+            TEXTO_VALIDACAO_SIMULACAO.color = ft.Colors.RED_300
+            CONTAINER_VALIDACAO_SIMULACAO.visible = True
+            TEXTO_VALIDACAO_SIMULACAO.visible = True
+            CONTAINER_VALIDACAO_SIMULACAO.update()
+            TEXTO_VALIDACAO_SIMULACAO.update()
+            return
+
+        escolha_luva = DROPDOWN_SECAO_NOMINAL_DA_LUVA.value or "Automático"
+
+        if escolha_luva == "Personalizado":
+            try:
+                DIAM_LUVA = float(ENTRADA_DIAMETRO_PERSONALIZADO.value or 0)
+            except ValueError:
+                DIAM_LUVA = 0.0
+        elif escolha_luva == "Automático":
+            DIAM_LUVA = 0.0
+        else:
+            DIAM_LUVA = OPCOES_LUVA.get(escolha_luva, 0.0)
+
+        excluir_circular = bool(CHECK_BOX_EXCLUIR_CABO_CIRCULAR.value)
+        DIAM_MICRO_FIO = float(SLIDER_GRANULARIDADE.value or 0.8)
+        LIMITE_OCUPACAO = float(SLIDER_LIMITE_OCUPACAO.value or 85) / 100.0
+
+        escolha_cabo = DROPDOWN_SECAO_NOMINAL_CABO.value or "50 mm²"
+        if excluir_circular:
+            DIAM_REDONDO_TOTAL = 0.0
+        elif escolha_cabo == "Personalizado":
+            try:
+                DIAM_REDONDO_TOTAL = float(ENTRADA_SECAO_PERSONALIZADA_CABO.value or 0)
+            except ValueError:
+                DIAM_REDONDO_TOTAL = 0.0
+        else:
+            DIAM_REDONDO_TOTAL = OPCOES_CABO_CIRCULAR.get(escolha_cabo, 0.0)
+
+        # --- Prepara UI para a simulação ---
+        PROGRESS_BAR_SIMULACAO.value = 0
+        PROGRESS_BAR_SIMULACAO.visible = True
+        PROGRESS_BAR_SIMULACAO.update()
+
+        TITULO_LOGS_SIMULACAO.visible = True
+        LOG_LIMPANDO_SIMULACAO_ANTERIOR.visible = False
+        LOG_FASE_1.visible = False
+        LOG_FASE_2.visible = False
+        LOG_FASE_3.visible = False
+        LOG_CONCLUSAO_SIMULACAO.visible = False
+        BOTAO_BAIXAR_RELATORIO.visible = False
+        CONTAINER_VALIDACAO_SIMULACAO.visible = False
+        self.page.update()
+
+        # --- Callbacks para atualização em tempo real ---
+        _log_widgets = [
+            LOG_LIMPANDO_SIMULACAO_ANTERIOR,
+            LOG_FASE_1,
+            LOG_FASE_2,
+            LOG_FASE_3,
+            LOG_CONCLUSAO_SIMULACAO,
+        ]
+
+        def on_log(fase_idx: int, texto: str):
+            widget = _log_widgets[fase_idx]
+            widget.value = texto
+            widget.visible = True
+            widget.update()
+
+        def on_progress(valor: int):
+            PROGRESS_BAR_SIMULACAO.value = valor / 100.0
+            PROGRESS_BAR_SIMULACAO.update()
+
+        # --- Executa simulação em thread separada ---
+        def run():
+            resultado = _run_sim(
+                escolha_luva=escolha_luva,
+                DIAM_LUVA=DIAM_LUVA,
+                LARG_RECT=LARG_RECT,
+                ALT_RECT=ALT_RECT,
+                QTD_RECT=QTD_RECT,
+                excluir_circular=excluir_circular,
+                DIAM_REDONDO_TOTAL=DIAM_REDONDO_TOTAL,
+                DIAM_MICRO_FIO=DIAM_MICRO_FIO,
+                LIMITE_OCUPACAO=LIMITE_OCUPACAO,
+                escolha_cabo=escolha_cabo,
+                on_log=on_log,
+                on_progress=on_progress,
+            )
+
+            if "erro" in resultado:
+                CONTAINER_VALIDACAO_SIMULACAO.bgcolor = ft.Colors.with_opacity(0.2, ft.Colors.RED_500)
+                TEXTO_VALIDACAO_SIMULACAO.value = resultado["erro"]
+                TEXTO_VALIDACAO_SIMULACAO.color = ft.Colors.RED_300
+                CONTAINER_VALIDACAO_SIMULACAO.visible = True
+                TEXTO_VALIDACAO_SIMULACAO.visible = True
+                self.page.update()
+                return
+
+            # Salva imagem e carrega como base64 para exibição
+            caminho_img = salvar_imagem(resultado)
+            with open(caminho_img, "rb") as f:
+                IMAGEM_SIMULACAO.src_base64 = base64.b64encode(f.read()).decode("utf-8")
+            IMAGEM_SIMULACAO.visible = True
+
+            res = resultado
+            self._resultado = resultado
+            self._caminho_img = caminho_img
+
+            # Dados das Seções
+            TEXT_DADOS_DAS_SECOES.visible = True
+
+            TITULO_FIO_RETANGULAR.visible = True
+            ICONE_PERGUNTA_FIO_RETANGULAR.tooltip = (
+                f"Unitário: {res['LARG_RECT']}x{res['ALT_RECT']} mm | Qtd: {res['QTD_RECT']}"
+            )
+            ICONE_PERGUNTA_FIO_RETANGULAR.visible = True
+            VALOR_FIO_RETANGULAR.value = f"{res['area_rect_total']:.2f} mm²"
+            VALOR_FIO_RETANGULAR.visible = True
+
+            TITULO_CABO_CIRCULAR.visible = not res["excluir_circular"]
+            VALOR_CABO_CIRCULAR.value = f"{res['area_redondo_total']:.2f} mm²"
+            VALOR_CABO_CIRCULAR.visible = not res["excluir_circular"]
+
+            TITULO_LUVA.visible = True
+            ICONE_PERGUNTA_LUVA.tooltip = f"Diâmetro: {res['DIAM_LUVA']} mm"
+            ICONE_PERGUNTA_LUVA.visible = True
+            VALOR_LUVA.value = f"{res['area_luva']:.2f} mm²"
+            VALOR_LUVA.visible = True
+
+            # Indicadores
+            TEXTO_INDICADORES.visible = True
+
+            TITULO_FIOS.visible = True
+            VALOR_INDICADOR_FIOS.value = f"{len(res['melhor_rects'])} / {res['QTD_RECT']}"
+            VALOR_INDICADOR_FIOS.visible = True
+
+            TITULO_OCUPACAO.visible = True
+            VALOR_INDICADOR_OCUPACAO.value = f"{res['taxa'] * 100:.1f}%"
+            VALOR_INDICADOR_OCUPACAO.visible = True
+
+            delta_taxa = (res["taxa"] - res["LIMITE_OCUPACAO"]) * 100
+            VALOR_DESVIO_OCUPACAO.value = f"{delta_taxa:+.1f}%"
+            if delta_taxa <= 0:
+                ICONE_DESVIO_OCUPACAO.name = ft.CupertinoIcons.ARROW_DOWN
+                ICONE_DESVIO_OCUPACAO.color = ft.Colors.GREEN_200
+                VALOR_DESVIO_OCUPACAO.color = ft.Colors.GREEN_200
+                CONTAINER_DESVIO_OCUPACAO.bgcolor = ft.Colors.with_opacity(0.2, ft.Colors.GREEN_500)
+            else:
+                ICONE_DESVIO_OCUPACAO.name = ft.CupertinoIcons.ARROW_UP
+                ICONE_DESVIO_OCUPACAO.color = ft.Colors.RED_200
+                VALOR_DESVIO_OCUPACAO.color = ft.Colors.RED_200
+                CONTAINER_DESVIO_OCUPACAO.bgcolor = ft.Colors.with_opacity(0.2, ft.Colors.RED_500)
+            ICONE_DESVIO_OCUPACAO.visible = True
+            VALOR_DESVIO_OCUPACAO.visible = True
+            CONTAINER_DESVIO_OCUPACAO.visible = True
+
+            TITULO_AREA_TOTAL.visible = True
+            VALOR_AREA_TOTAL.value = f"{res['area_total_ocupada']:.2f} mm²"
+            VALOR_AREA_TOTAL.visible = True
+
+            # Validação final
+            falha_retangulos = len(res["melhor_rects"]) < res["QTD_RECT"]
+            falha_ocupacao = res["taxa"] > res["LIMITE_OCUPACAO"]
+            falha_circular = (
+                not res["excluir_circular"]
+                and res["qtd_micro_fios"] > 0
+                and len(res["micro_fios"]) < res["qtd_micro_fios"]
+            )
+            simulacao_aprovada = not (falha_retangulos or falha_ocupacao or falha_circular)
+            self._simulacao_aprovada = simulacao_aprovada
+
+            if simulacao_aprovada:
+                msg = f"Aprovada | Orientação: {res['orientacao_final']} | Fios: {len(res['melhor_rects'])}/{res['QTD_RECT']}"
+                if not res["excluir_circular"] and res["qtd_micro_fios"] > 0:
+                    pct = len(res["micro_fios"]) / res["qtd_micro_fios"] * 100
+                    msg += f" | Circular: {pct:.0f}%"
+                msg += f" | {res['elapsed_time']:.2f}s"
+                CONTAINER_VALIDACAO_SIMULACAO.bgcolor = ft.Colors.with_opacity(0.2, ft.Colors.GREEN_500)
+                TEXTO_VALIDACAO_SIMULACAO.value = msg
+                TEXTO_VALIDACAO_SIMULACAO.color = ft.Colors.GREEN_300
+            else:
+                motivos = []
+                if falha_retangulos:
+                    motivos.append(f"Fios: {len(res['melhor_rects'])}/{res['QTD_RECT']}")
+                if falha_circular:
+                    pct = len(res["micro_fios"]) / res["qtd_micro_fios"] * 100
+                    motivos.append(f"Circular: {pct:.0f}%")
+                if falha_ocupacao:
+                    motivos.append(
+                        f"Ocupação: {res['taxa']*100:.1f}% > {res['LIMITE_OCUPACAO']*100:.0f}%"
+                    )
+                CONTAINER_VALIDACAO_SIMULACAO.bgcolor = ft.Colors.with_opacity(0.2, ft.Colors.RED_500)
+                TEXTO_VALIDACAO_SIMULACAO.value = f"Reprovada | {', '.join(motivos)} | {res['elapsed_time']:.2f}s"
+                TEXTO_VALIDACAO_SIMULACAO.color = ft.Colors.RED_300
+
+            CONTAINER_VALIDACAO_SIMULACAO.visible = True
+            TEXTO_VALIDACAO_SIMULACAO.visible = True
+            BOTAO_BAIXAR_RELATORIO.visible = True
+
+            self.page.update()
+
+        threading.Thread(target=run, daemon=True).start()
+
+    def baixar_relatorio(self, e):
+        if self._resultado is None:
+            return
+        import datetime
+        fuso_br = datetime.timezone(datetime.timedelta(hours=-3))
+        data_hoje = datetime.datetime.now(fuso_br).strftime("%d-%m-%Y")
+        self._file_picker.save_file(
+            dialog_title="Salvar Relatório",
+            file_name=f"relatorio_simulacao_{data_hoje}.pdf",
+            allowed_extensions=["pdf"],
+        )
+        self.page.update()
+
+    def on_file_picker_result(self, e: ft.FilePickerResultEvent):
+        if e.path is None:
+            return
+        pdf_bytes = create_pdf(
+            self._resultado,
+            self._caminho_img,
+            self._simulacao_aprovada,
+            TEXTO_VALIDACAO_SIMULACAO.value,
+        )
+        with open(e.path, "wb") as f:
+            f.write(pdf_bytes)
+        if self._caminho_img and os.path.exists(self._caminho_img):
+            os.remove(self._caminho_img)
+        self.page.open(
+            ft.SnackBar(
+                content=ft.Text(f"Relatório salvo em: {e.path}"),
+                bgcolor=ft.Colors.with_opacity(0.9, ft.Colors.GREEN_800),
+            )
+        )
 
     def build(self):
         return ft.Row(
@@ -539,10 +799,9 @@ class Home(ft.Container):
                                         ),
                                         ## Container Graph
                                         ft.Container(
-                                            width=500,
-                                            height=800,
-                                            #bgcolor="yellow",
-                                            content=None
+                                            expand=True,
+                                            alignment=ft.alignment.center,
+                                            content=IMAGEM_SIMULACAO
                                         ),
                                     ]
                                 )

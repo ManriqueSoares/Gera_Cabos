@@ -139,5 +139,7 @@ LOG_CONCLUSAO_SIMULACAO = ft.Text("Simulação concluída! (Total: 1.14s)", size
 
 BOTAO_BAIXAR_RELATORIO = ft.ElevatedButton(text="Baixar Relatório", width=150, bgcolor=ft.Colors.RED, height=26, icon=ft.Icons.FILE_OPEN, visible=False)
 
+IMAGEM_SIMULACAO = ft.Image(visible=False, fit=ft.ImageFit.CONTAIN, expand=True)
+
 TITULO_DESENVOLVEDOR = ft.Text("Desenvolvedor", size=14, weight=ft.FontWeight.W_400)
 VALOR_DESENVOLVEDOR = ft.Text("DELLAZARIG - Parte Ativa Gravataí", size=14, weight=ft.FontWeight.W_500)
