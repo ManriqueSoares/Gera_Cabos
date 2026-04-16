@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ['GerarCabos.py'],
+    ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('assets', 'assets')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
