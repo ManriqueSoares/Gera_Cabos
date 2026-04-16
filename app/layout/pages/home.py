@@ -175,8 +175,185 @@ class Home(ft.Container):
                             ## DADOS GERAIS
                             ft.Container(
                                 expand=True,
-                                content=None
+                                content=ft.Row(
+                                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                    controls=[
+                                        ## Container dados
+                                        ft.Container(
+                                            expand=True,
+                                            padding=10,
+                                            content=ft.Column(
+                                                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                controls=[
+                                                    ## Dados da seção
+                                                    ft.Container(
+                                                        expand=True,
+                                                        #bgcolor="red",
+                                                        content=ft.Column(
+                                                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                            controls=[
+                                                                ft.Container(
+                                                                    width=True,
+                                                                    height=50,
+                                                                    padding=ft.padding.only(left=5),
+                                                                    alignment=ft.alignment.center_left,
+                                                                    content=TEXT_DADOS_DAS_SECOES
+                                                                ),
+                                                                ft.Container(
+                                                                    expand=True,
+                                                                    padding=10,
+                                                                    content=ft.Row(
+                                                                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                                                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                        controls=[
+                                                                            ## Fio retangular
+                                                                            ft.Container(
+                                                                                width=200,
+                                                                                height=True,
+                                                                                alignment=ft.alignment.center,
+                                                                                content=ft.Column(
+                                                                                    alignment=ft.MainAxisAlignment.START,
+                                                                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                                    controls=[
+                                                                                        ft.Row(
+                                                                                            alignment=ft.MainAxisAlignment.CENTER,
+                                                                                            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                                            controls=[TITULO_FIO_RETANGULAR, ICONE_PERGUNTA_FIO_RETANGULAR]),
+                                                                                        VALOR_FIO_RETANGULAR
+                                                                                    ]
+                                                                                )
+                                                                            ),
+                                                                            ## Cabo Cirbular
+                                                                            ft.Container(
+                                                                                width=200,
+                                                                                height=True,
+                                                                                alignment=ft.alignment.center,
+                                                                                content=ft.Column(
+                                                                                    alignment=ft.MainAxisAlignment.CENTER,
+                                                                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                                    controls=[
+                                                                                        TITULO_CABO_CIRCULAR,
+                                                                                        VALOR_CABO_CIRCULAR
+                                                                                    ]
+                                                                                )
+                                                                            ),
+                                                                            ##Luva
+                                                                            ft.Container(
+                                                                                width=200,
+                                                                                height=True,
+                                                                                alignment=ft.alignment.center,
+                                                                                content=ft.Column(
+                                                                                    alignment=ft.MainAxisAlignment.CENTER,
+                                                                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                                    controls=[
+                                                                                        ft.Row(
+                                                                                            alignment=ft.MainAxisAlignment.CENTER,
+                                                                                            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                                            controls=[TITULO_LUVA, ICONE_PERGUNTA_LUVA]),
+                                                                                        VALOR_LUVA
+                                                                                    ]
+                                                                                )
+                                                                            )
+                                                                        ]
+                                                                    )
+                                                                )
+                                                            ]
+                                                        )
+                                                    ),
+                                                    ft.Divider(height=1, color=ft.Colors.GREY_900),
+                                                    ## Indicadores
+                                                    ft.Container(
+                                                        expand=True,
+                                                        #bgcolor="blue",
+                                                        content=ft.Column(
+                                                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                            controls=[
+                                                                ft.Container(
+                                                                    width=True,
+                                                                    height=50,
+                                                                    padding=ft.padding.only(left=5),
+                                                                    alignment=ft.alignment.center_left,
+                                                                    content=TEXTO_INDICADORES
+                                                                ),
+                                                                ft.Container(
+                                                                    expand=True,
+                                                                    padding=10,
+                                                                    content=ft.Row(
+                                                                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                                                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                        controls=[
+                                                                            ft.Container(
+                                                                                width=200,
+                                                                                height=True,
+                                                                                alignment=ft.alignment.center,
+                                                                                content=ft.Column(
+                                                                                    alignment=ft.MainAxisAlignment.START,
+                                                                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                                    controls=[
+                                                                                        ft.Row(
+                                                                                            alignment=ft.MainAxisAlignment.CENTER,
+                                                                                            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                                            controls=[TITULO_FIOS]),
+                                                                                        VALOR_INDICADOR_FIOS
+                                                                                    ]
+                                                                                )
+                                                                            ),
+                                                                            ft.Container(
+                                                                                width=400,
+                                                                                height=True,
+                                                                                alignment=ft.alignment.center,
+                                                                                content=ft.Column(
+                                                                                    alignment=ft.MainAxisAlignment.CENTER,
+                                                                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                                    controls=[
+                                                                                        TITULO_OCUPACAO,
+                                                                                        VALOR_INDICADOR_OCUPACAO,
+                                                                                        ft.Container(
+                                                                                            content=CONTAINER_DESVIO_OCUPACAO
+                                                                                        )
+                                                                                    ]
+                                                                                )
+                                                                            ),
+                                                                            ft.Container(
+                                                                                width=200,
+                                                                                height=True,
+                                                                                alignment=ft.alignment.center,
+                                                                                content=ft.Column(
+                                                                                    alignment=ft.MainAxisAlignment.CENTER,
+                                                                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                                    controls=[
+                                                                                        ft.Row(
+                                                                                            alignment=ft.MainAxisAlignment.CENTER,
+                                                                                            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                                            controls=[TITULO_AREA_TOTAL]),
+                                                                                        VALOR_AREA_TOTAL
+                                                                                    ]
+                                                                                )
+                                                                            )
+                                                                        ]
+                                                                    )
+                                                                )
+                                                            ]
+                                                        )
+                                                    )
+                                                ]
+                                            )
+                                        ),
+                                        ## Container Graph
+                                        ft.Container(
+                                            width=500,
+                                            height=800,
+                                            #bgcolor="yellow",
+                                            content=None
+                                        ),
+                                    ]
+                                )
                             ),
+                            ft.Container(height=20),
                             ## VALIDACAO
                             ft.Container(
                                 width=True,
@@ -185,7 +362,7 @@ class Home(ft.Container):
                                 content=CONTAINER_VALIDACAO_SIMULACAO
                             ),
                             
-                            ft.Divider(height=1, color=ft.Colors.GREY_900),
+                            #ft.Divider(height=1, color=ft.Colors.GREY_900),
                             ## LOGS
                             ft.Container(
                                 width=True,
@@ -236,9 +413,21 @@ class Home(ft.Container):
                                         )
                                     ]
                                 )
-                            )
+                            ),
+                            ft.Divider(height=1, color=ft.Colors.GREY_900),
                             ## DEV
-                        
+                            ft.Container(
+                                width=True,
+                                height=70,
+                                padding=ft.padding.only(left=15, bottom=10),
+                                content=ft.Row(
+                                    alignment=ft.MainAxisAlignment.START,
+                                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                    controls=[
+                                        TITULO_DESENVOLVEDOR, VALOR_DESENVOLVEDOR
+                                    ]
+                                )
+                            )
                         ]
                     )
                 )

@@ -90,12 +90,13 @@ VALOR_INDICADOR_FIOS = ft.Text("10/10", size=20, weight=ft.FontWeight.W_500)
 
 TITULO_OCUPACAO = ft.Text("Ocupação", size=13, weight=ft.FontWeight.W_400)
 VALOR_INDICADOR_OCUPACAO = ft.Text("46.40%", size=20, weight=ft.FontWeight.W_500)
-ICONE_DESVIO_OCUPACAO = ft.Icon(ft.CupertinoIcons.ARROW_RIGHT)
-VALOR_DESVIO_OCUPACAO = ft.Text("0.00%", size=7, weight=ft.FontWeight.W_500)
+ICONE_DESVIO_OCUPACAO = ft.Icon(ft.CupertinoIcons.ARROW_RIGHT, size=10)
+VALOR_DESVIO_OCUPACAO = ft.Text("0.00%", size=10, weight=ft.FontWeight.W_500, color=ft.Colors.GREEN_200)
 CONTAINER_DESVIO_OCUPACAO = ft.Container(
-    expand=True,
+    width=70,
+    height=20,
     border_radius=20,
-    bgcolor=ft.Colors.GREY_300,
+    bgcolor=ft.Colors.with_opacity(0.2, ft.Colors.GREEN_500),
     content=ft.Row(
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -112,7 +113,6 @@ VALOR_AREA_TOTAL = ft.Text("163.81 mm²", size=20, weight=ft.FontWeight.W_500)
 
 TEXTO_VALIDACAO_SIMULACAO = ft.Text("Validação da Simulação", size=13, weight=ft.FontWeight.W_400, color=ft.Colors.GREEN_300)
 CONTAINER_VALIDACAO_SIMULACAO = ft.Container(
-    width=True,
     height=20,
     bgcolor=ft.Colors.with_opacity(0.2,ft.Colors.GREEN_500),
     border_radius=10,
