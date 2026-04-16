@@ -70,33 +70,34 @@ BOTAO_OPEN_SIDBAR = ft.IconButton(icon=ft.CupertinoIcons.RIGHT_CHEVRON, visible=
 TITULO_JANELA_PRINCIPAL = ft.Text("Simulação: Fio Retangular + Cabo Circular", size=27, weight=ft.FontWeight.W_600) ## Precisa ser alterado em algumas situaçãoes específicas
 DESCRICAO_APP = ft.Text("Este aplicativo simula a montagem prática de luvas, verificando fisicamente se o condutor cabe na luva. Além disso, realiza a simulação \nutilizando cabos retangulares e circulares para validar o encaixe em luvas curtas.", size=16)
 
-PROGRESS_BAR_SIMULACAO = ft.ProgressBar(width=True, height=8, color=ft.Colors.BLUE_500, visible=True, border_radius=20)
+PROGRESS_BAR_SIMULACAO = ft.ProgressBar(width=True, height=8, color=ft.Colors.BLUE_500, visible=False, border_radius=20)
 
-TEXT_DADOS_DAS_SECOES = ft.Text("Dados das Seções", size=20, weight=ft.FontWeight.W_500)
+TEXT_DADOS_DAS_SECOES = ft.Text("Dados das Seções", size=20, weight=ft.FontWeight.W_500, visible=False)
 
-TITULO_FIO_RETANGULAR = ft.Text("Fio Retangular", size=13, weight=ft.FontWeight.W_400)
-ICONE_PERGUNTA_FIO_RETANGULAR = ft.Icon(ft.Icons.HELP_OUTLINE, color="#888888", size=18, tooltip="Unitário: 7.0x1.5 mm | Qtd: 10")
-VALOR_FIO_RETANGULAR = ft.Text("105.00 mm²", size=20, weight=ft.FontWeight.W_500)
+TITULO_FIO_RETANGULAR = ft.Text("Fio Retangular", size=13, weight=ft.FontWeight.W_400, visible=False)
+ICONE_PERGUNTA_FIO_RETANGULAR = ft.Icon(ft.Icons.HELP_OUTLINE, color="#888888", size=18, tooltip="Unitário: 7.0x1.5 mm | Qtd: 10", visible=False)
+VALOR_FIO_RETANGULAR = ft.Text("105.00 mm²", size=20, weight=ft.FontWeight.W_500, visible=False)
 
-TITULO_CABO_CIRCULAR = ft.Text("Cabo Circular", size=13, weight=ft.FontWeight.W_400)
-VALOR_CABO_CIRCULAR = ft.Text("95.00 mm²", size=20, weight=ft.FontWeight.W_500)
+TITULO_CABO_CIRCULAR = ft.Text("Cabo Circular", size=13, weight=ft.FontWeight.W_400, visible=False)
+VALOR_CABO_CIRCULAR = ft.Text("95.00 mm²", size=20, weight=ft.FontWeight.W_500, visible=False)
 
-TITULO_LUVA = ft.Text("Luva", size=13, weight=ft.FontWeight.W_400)
-ICONE_PERGUNTA_LUVA = ft.Icon(ft.Icons.HELP_OUTLINE, color="#888888", size=18, tooltip="Diâmetro: 17.00 mm")
-VALOR_LUVA = ft.Text("226.98 mm²", size=20, weight=ft.FontWeight.W_500)
+TITULO_LUVA = ft.Text("Luva", size=13, weight=ft.FontWeight.W_400, visible=False)
+ICONE_PERGUNTA_LUVA = ft.Icon(ft.Icons.HELP_OUTLINE, color="#888888", size=18, tooltip="Diâmetro: 17.00 mm", visible=False)
+VALOR_LUVA = ft.Text("226.98 mm²", size=20, weight=ft.FontWeight.W_500, visible=False)
 
-TEXTO_INDICADORES = ft.Text("Indicadores", size=20, weight=ft.FontWeight.W_500)
+TEXTO_INDICADORES = ft.Text("Indicadores", size=20, weight=ft.FontWeight.W_500, visible=False)
 
-TITULO_FIOS = ft.Text("Fios", size=13, weight=ft.FontWeight.W_400)
-VALOR_INDICADOR_FIOS = ft.Text("10/10", size=20, weight=ft.FontWeight.W_500)
+TITULO_FIOS = ft.Text("Fios", size=13, weight=ft.FontWeight.W_400, visible=False)
+VALOR_INDICADOR_FIOS = ft.Text("10/10", size=20, weight=ft.FontWeight.W_500, visible=False)
 
-TITULO_OCUPACAO = ft.Text("Ocupação", size=13, weight=ft.FontWeight.W_400)
-VALOR_INDICADOR_OCUPACAO = ft.Text("46.40%", size=20, weight=ft.FontWeight.W_500)
-ICONE_DESVIO_OCUPACAO = ft.Icon(ft.CupertinoIcons.ARROW_RIGHT, size=10, color=ft.Colors.GREEN_200)
-VALOR_DESVIO_OCUPACAO = ft.Text("0.00%", size=10, weight=ft.FontWeight.W_500, color=ft.Colors.GREEN_200)
+TITULO_OCUPACAO = ft.Text("Ocupação", size=13, weight=ft.FontWeight.W_400, visible=False)
+VALOR_INDICADOR_OCUPACAO = ft.Text("46.40%", size=20, weight=ft.FontWeight.W_500, visible=False)
+ICONE_DESVIO_OCUPACAO = ft.Icon(ft.CupertinoIcons.ARROW_RIGHT, size=10, color=ft.Colors.GREEN_200, visible=False)
+VALOR_DESVIO_OCUPACAO = ft.Text("0.00%", size=10, weight=ft.FontWeight.W_500, color=ft.Colors.GREEN_200, visible=False)
 CONTAINER_DESVIO_OCUPACAO = ft.Container(
     width=70,
     height=20,
+    visible=False,
     border_radius=20,
     bgcolor=ft.Colors.with_opacity(0.2, ft.Colors.GREEN_500),
     content=ft.Row(
@@ -109,15 +110,16 @@ CONTAINER_DESVIO_OCUPACAO = ft.Container(
     )
 )
 
-TITULO_AREA_TOTAL = ft.Text("Área Total", size=13, weight=ft.FontWeight.W_400)
-VALOR_AREA_TOTAL = ft.Text("163.81 mm²", size=20, weight=ft.FontWeight.W_500)
+TITULO_AREA_TOTAL = ft.Text("Área Total", size=13, weight=ft.FontWeight.W_400, visible=False)
+VALOR_AREA_TOTAL = ft.Text("163.81 mm²", size=20, weight=ft.FontWeight.W_500, visible=False)
 
 
-TEXTO_VALIDACAO_SIMULACAO = ft.Text("Validação da Simulação", size=13, weight=ft.FontWeight.W_400, color=ft.Colors.GREEN_300)
+TEXTO_VALIDACAO_SIMULACAO = ft.Text("Validação da Simulação", size=13, weight=ft.FontWeight.W_400, color=ft.Colors.GREEN_300, visible=False)
 CONTAINER_VALIDACAO_SIMULACAO = ft.Container(
     height=20,
     bgcolor=ft.Colors.with_opacity(0.2,ft.Colors.GREEN_500),
     border_radius=10,
+    visible=False,
     padding=10,
     content=ft.Row(
         alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
@@ -128,14 +130,14 @@ CONTAINER_VALIDACAO_SIMULACAO = ft.Container(
     )
 )
 
-TITULO_LOGS_SIMULACAO = ft.Text("Logs da Simulação", size=16, weight=ft.FontWeight.W_500)
-LOG_LIMPANDO_SIMULACAO_ANTERIOR = ft.Text("Limpando simulação anterior...", size=11, weight=ft.FontWeight.W_300)
-LOG_FASE_1 = ft.Text("Fase 1: Selecionando Luva... (0.04s)", size=11, weight=ft.FontWeight.W_300)
-LOG_FASE_2 = ft.Text("Fase 2: Posicionando Fio Retangular... (1.04s)", size=11, weight=ft.FontWeight.W_300)
-LOG_FASE_3 = ft.Text("Fase 3: Posicionando Cabo Circular... (0.06s)", size=11, weight=ft.FontWeight.W_300)
-LOG_CONCLUSAO_SIMULACAO = ft.Text("Simulação concluída! (Total: 1.14s)", size=11, weight=ft.FontWeight.W_300)
+TITULO_LOGS_SIMULACAO = ft.Text("Logs da Simulação", size=16, weight=ft.FontWeight.W_500, visible=False)
+LOG_LIMPANDO_SIMULACAO_ANTERIOR = ft.Text("Limpando simulação anterior...", size=11, weight=ft.FontWeight.W_300, visible=False)
+LOG_FASE_1 = ft.Text("Fase 1: Selecionando Luva... (0.04s)", size=11, weight=ft.FontWeight.W_300, visible=False)
+LOG_FASE_2 = ft.Text("Fase 2: Posicionando Fio Retangular... (1.04s)", size=11, weight=ft.FontWeight.W_300, visible=False)
+LOG_FASE_3 = ft.Text("Fase 3: Posicionando Cabo Circular... (0.06s)", size=11, weight=ft.FontWeight.W_300, visible=False)
+LOG_CONCLUSAO_SIMULACAO = ft.Text("Simulação concluída! (Total: 1.14s)", size=11, weight=ft.FontWeight.W_300, visible=False)
 
-BOTAO_BAIXAR_RELATORIO = ft.ElevatedButton(text="Baixar Relatório", width=150, bgcolor=ft.Colors.RED, height=26, icon=ft.Icons.FILE_OPEN)
+BOTAO_BAIXAR_RELATORIO = ft.ElevatedButton(text="Baixar Relatório", width=150, bgcolor=ft.Colors.RED, height=26, icon=ft.Icons.FILE_OPEN, visible=False)
 
 TITULO_DESENVOLVEDOR = ft.Text("Desenvolvedor", size=14, weight=ft.FontWeight.W_400)
 VALOR_DESENVOLVEDOR = ft.Text("DELLAZARIG - Parte Ativa Gravataí", size=14, weight=ft.FontWeight.W_500)
